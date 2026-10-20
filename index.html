@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>鋳造課 日報メニュー</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#24324a">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="鋳造課日報">
+<style>
+*{box-sizing:border-box}
+html,body,a,button{touch-action:manipulation}
+body{margin:0;background:#f3f5f8;color:#1d2330;font-family:"Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif;font-size:17px}
+header{background:#24324a;color:#fff;padding:16px 20px}
+header h1{margin:0;font-size:24px} header p{margin:4px 0 0;color:#cfd8e6;font-size:14px}
+main{max-width:900px;margin:0 auto;padding:16px;display:grid;gap:16px}
+.card{background:#fff;border:1px solid #d7dde6;border-radius:14px;padding:16px}
+.lbl{font-weight:bold;margin-bottom:8px}
+.eq{display:flex;gap:10px}
+.eq button{flex:1;min-height:60px;font-size:22px;font-weight:bold;border:2px solid #24324a;background:#fff;color:#24324a;border-radius:12px;font-family:inherit}
+.eq button.on{background:#24324a;color:#fff}
+.apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.app{display:flex;flex-direction:column;gap:10px;border-radius:16px;padding:18px;color:#fff;text-decoration:none;min-height:170px;justify-content:center;align-items:center;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.app b{font-size:34px} .app span{font-size:15px;opacity:.9}
+.app.zokei{background:#1f4e5a} .app.chuto{background:#5c1f16}
+.views{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.views a{flex:1;min-height:48px;display:flex;align-items:center;justify-content:center;border:1px solid #b9c2cf;border-radius:10px;color:#1d2330;text-decoration:none;background:#fff;font-size:16px}
+.small{font-size:13px;color:#5d6778}
+</style>
+</head>
+<body>
+<header><h1>鋳造課 日報メニュー</h1><p>使う日報を押してください / Pilih laporan harian</p></header>
+<main>
+  <section class="card">
+    <div class="lbl">号機 <span class="small">Mesin</span></div>
+    <div class="eq" id="eq"><button data-e="1号機">1号機</button><button data-e="2号機">2号機</button></div>
+  </section>
+  <div class="apps">
+    <a class="app zokei" data-to="/zokei-nippo/" href="/zokei-nippo/"><b>造型日報</b><span>Laporan cetakan</span><span class="eqv"></span></a>
+    <a class="app chuto" data-to="/chuto2-nippo/" href="/chuto2-nippo/"><b>注湯日報</b><span>Laporan penuangan</span><span class="eqv"></span></a>
+  </div>
+  <section class="card">
+    <div class="lbl">見るだけ（閲覧用） <span class="small">Hanya melihat</span></div>
+    <div class="views"><a data-to="/zokei-nippo/" data-view="1" href="/zokei-nippo/?view">造型日報（閲覧用）</a><a data-to="/chuto2-nippo/" data-view="1" href="/chuto2-nippo/?view">注湯日報（閲覧用）</a></div>
+  </section>
+  <p class="small">日報の画面の上の黄色いボタンで、造型日報と注湯日報をいつでも切りかえられます。このメニューから開くと、切りかえても全画面のままです。</p>
+</main>
+<script>
+(function(){
+  const get=()=>{ try{ return localStorage.getItem("menu:equip")||"2号機"; }catch(e){ return "2号機"; } };
+  const set=v=>{ try{ localStorage.setItem("menu:equip",v); }catch(e){} };
+  let eq=get();
+  function render(){ document.querySelectorAll("#eq button").forEach(b=>b.classList.toggle("on",b.dataset.e===eq)); document.querySelectorAll(".eqv").forEach(s=>s.textContent=eq); }
+  document.getElementById("eq").addEventListener("click",e=>{ const b=e.target.closest("[data-e]"); if(!b) return; eq=b.dataset.e; set(eq); render(); });
+  document.querySelectorAll("a[data-to]").forEach(a=>a.addEventListener("click",e=>{ e.preventDefault(); location.href=a.dataset.to+"?equip="+encodeURIComponent(eq)+(a.dataset.view?"&view":""); }));
+  render();
+})();
+</script>
+</body>
+</html>
