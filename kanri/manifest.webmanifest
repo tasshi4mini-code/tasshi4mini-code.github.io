@@ -1,0 +1,27 @@
+{
+  "name": "鋳造課 日報（管理者）",
+  "short_name": "日報 管理者",
+  "id": "/kanri/",
+  "description": "鋳造課の全工程の日報をまとめて入力・閲覧（管理者用）",
+  "lang": "ja",
+  "start_url": "/kanri/",
+  "scope": "/kanri/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eef1f4",
+  "theme_color": "#263238",
+  "icons": [
+    {
+      "src": "/kanri/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/kanri/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
