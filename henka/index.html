@@ -65,9 +65,12 @@ dialog{border:none;border-radius:14px;padding:0;max-width:760px;width:calc(100% 
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .dlg{padding:16px}
 .dlg h3{margin:0 0 10px}
-.fg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 12px}
+.fg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px 12px}
+.fg .c2{grid-column:span 2}
+.fg>*{min-width:0}
 .fg .w2{grid-column:span 2}.fg .w4{grid-column:1/-1}
-.tcell{display:flex;gap:6px}.tcell input{flex:1;min-width:0}.tcell button{min-width:56px;border-radius:8px;border:1px solid #b9c2cf;background:#fff}
+.tcell{display:flex;gap:6px}.tcell input{flex:1;min-width:0}.tcell button{min-width:52px;border-radius:8px;border:1px solid #b9c2cf;background:#fff}
+.tcell button.clr{min-width:44px;color:#b00020;font-weight:bold}
 .sec{border-top:2px dashed #e0d8d3;margin-top:12px;padding-top:10px;font-weight:bold;color:#6d4c41}
 .mic{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
 .mic button{min-height:44px;border-radius:999px;border:2px solid #c62828;background:#fff;color:#c62828;font-weight:bold;padding:0 16px;cursor:pointer}
@@ -87,7 +90,7 @@ body.view .add,body.view .btns .pri,body.view .btns .del,body.view .mic{display:
 @media (max-width:820px){
   .top{grid-template-columns:1fr}
   .tblw{display:none}.cards{display:block}
-  .fg{grid-template-columns:1fr 1fr}.fg .w2{grid-column:1/-1}
+  .fg{grid-template-columns:1fr 1fr}.fg .w2{grid-column:1/-1}.fg .c2{grid-column:1/-1}
   header h1{font-size:17px;width:100%}
 }
 </style>
@@ -144,17 +147,17 @@ body.view .add,body.view .btns .pri,body.view .btns .del,body.view .mic{display:
 <dialog id="dlgRec"><div class="dlg">
   <h3 id="recTitle">異常・変化点を記録</h3>
   <div class="fg">
-    <label class="f">日付<input type="date" id="rDate"></label>
-    <div class="f"><span class="small">時刻</span><div class="tcell"><input type="time" id="rTime"><button type="button" data-now="rTime">今</button></div></div>
+    <label class="f c2">日付<input type="date" id="rDate"></label>
+    <div class="f c2"><span class="small">時刻</span><div class="tcell"><input type="time" id="rTime"><button type="button" data-now="rTime">今</button><button type="button" class="clr" data-clr="rTime" aria-label="時刻を消す">×</button></div></div>
     <label class="f">4M区分<select id="rM4"></select></label>
     <label class="f">工程<select id="rProc"></select></label>
     <label class="f w4">異常・変化点内容<textarea id="rContent" lang="ja" placeholder="例）リフマグクレーン故障"></textarea>
       <div class="mic"><button type="button" data-mic="rContent">🎤 声で入力</button><small id="micHint1"></small><span class="len" id="len1" style="margin-left:auto"></span></div></label>
     <div class="sec w4">処置・結果（日時／詳細／評価）</div>
-    <label class="f">処置の日付<input type="date" id="rRDate"></label>
-    <div class="f"><span class="small">処置の時刻</span><div class="tcell"><input type="time" id="rRTime"><button type="button" data-now="rRTime">今</button></div></div>
+    <div class="f c2"><span class="small">処置の日付</span><div class="tcell"><input type="date" id="rRDate"><button type="button" class="clr" data-clr="rRDate" aria-label="処置の日付を消す">×</button></div></div>
+    <div class="f c2"><span class="small">処置の時刻</span><div class="tcell"><input type="time" id="rRTime"><button type="button" data-now="rRTime">今</button><button type="button" class="clr" data-clr="rRTime" aria-label="処置の時刻を消す">×</button></div></div>
     <label class="f">確認者<select id="rChecker"></select></label>
-    <label class="f">品質<select id="rQuality"></select></label>
+    <label class="f">品質<select id="rQuality"></select><span class="small" id="qNote" style="font-size:12px"></span></label>
     <label class="f w4">処置・結果<textarea id="rResult" lang="ja" placeholder="例）ドラムリール内のショート　応急修理"></textarea>
       <div class="mic"><button type="button" data-mic="rResult">🎤 声で入力</button><small id="micHint2"></small><span class="len" id="len2" style="margin-left:auto"></span></div></label>
   </div>
@@ -335,16 +338,23 @@ function openRec(r){ cur=r?Object.assign({},r):{id:uid(),date:ymd(new Date()),ti
   $("rContent").value=cur.content; $("rRDate").value=cur.rdate; $("rRTime").value=cur.rtime; $("rResult").value=cur.result;
   opts($("rChecker"),names.checker,cur.checker,"－",true); opts($("rQuality"),names.quality,cur.quality,"－",true);
   document.querySelectorAll("#dlgRec input,#dlgRec select,#dlgRec textarea").forEach(el=>el.disabled=VIEW);
+  const t=topRec(cur.date.slice(0,7)); $("qNote").textContent=(!t||t.id===cur.id)?"一番上の記録に入れると、この月の全部の記録に入ります":(t.quality?`一番上の記録と同じ「${t.quality}」が自動で入ります`:"");
   lens(); $("dlgRec").showModal(); }
 function lens(){ $("len1").textContent=$("rContent").value.length+"文字"; $("len2").textContent=$("rResult").value.length+"文字"; }
 $("rContent").addEventListener("input",lens); $("rResult").addEventListener("input",lens);
 $("rResult").addEventListener("input",()=>{ if($("rResult").value&&!$("rRDate").value){ $("rRDate").value=ymd(new Date()); $("rRTime").value=nowHM(); } });
 ["rChecker","rQuality"].forEach(id=>$(id).addEventListener("change",e=>addFlow(e.target,id==="rChecker"?"checker":"quality",v=>{ const L=id==="rChecker"?names.checker:names.quality; opts(e.target,L,v||"","－",true); })));
+document.querySelectorAll("[data-clr]").forEach(b=>b.onclick=()=>{ $(b.dataset.clr).value=""; });
 document.querySelectorAll("[data-now]").forEach(b=>b.onclick=()=>{ $(b.dataset.now).value=nowHM(); if(b.dataset.now==="rRTime"&&!$("rRDate").value) $("rRDate").value=ymd(new Date()); });
 $("btnAdd").onclick=()=>openRec(null);
 $("tbody").addEventListener("click",e=>{ const tr=e.target.closest("tr[data-id]"); if(tr) openRec(recs.find(r=>r.id===tr.dataset.id)); });
 $("cards").addEventListener("click",e=>{ const c=e.target.closest("[data-id]"); if(c) openRec(recs.find(r=>r.id===c.dataset.id)); });
 $("btnCancel").onclick=()=>{ stopMic(); $("dlgRec").close(); };
+// 品質：一番上（いちばん早い）記録に入れた名前を、その月の内容が入っている記録すべてに入れる
+function topRec(mon){ const L=(mon===month?recs:((LS.get(APP+":m:"+mon,null)||{}).recs||[])).filter(r=>!r.del&&r.content).sort((a,b)=>(a.date+(a.time||"99:99")).localeCompare(b.date+(b.time||"99:99"))); return L[0]||null; }
+function spreadQuality(mon,prev){ if(mon!==month) return; const top=topRec(mon); if(!top||!top.quality) return; let n=0;
+  recs.forEach(r=>{ if(r.del||!r.content||r.id===top.id) return; if(!r.quality||r.quality===prev){ if(r.quality!==top.quality){ r.quality=top.quality; r.u=Date.now(); const raw=Object.assign({},r); delete raw.u; Sync.queue("rec",mon,r.id,raw,r.u); n++; } } });
+  if(n){ saveLocal(); toast(`品質「${top.quality}」を ${n}件に入れました`); } }
 function putRec(r,mon){ const i=recs.findIndex(x=>x.id===r.id); if(mon===month){ if(i<0) recs.push(r); else recs[i]=r; saveLocal(); }
   else { const s=LS.get(APP+":m:"+mon,null)||{recs:[],head:{}}; const j=s.recs.findIndex(x=>x.id===r.id); if(j<0) s.recs.push(r); else s.recs[j]=r; LS.set(APP+":m:"+mon,s); }
   const raw=Object.assign({},r); delete raw.u; Sync.queue("rec",mon,r.id,raw,r.u); }
@@ -352,9 +362,11 @@ $("btnSave").onclick=()=>{ if(VIEW) return; stopMic();
   const r=Object.assign(cur,{date:$("rDate").value,time:$("rTime").value,m4:$("rM4").value,proc:$("rProc").value,content:$("rContent").value.trim(),rdate:$("rRDate").value,rtime:$("rRTime").value,result:$("rResult").value.trim(),checker:$("rChecker").value==="__add"?"":$("rChecker").value,quality:$("rQuality").value==="__add"?"":$("rQuality").value,u:Date.now()});
   if(!r.date){ toast("日付を入れてください"); return; } if(!r.content){ toast("異常・変化点内容を入れてください"); return; }
   if(r.checker) LS.set(APP+":lastChecker",r.checker);
+  const prevTop=topRec(r.date.slice(0,7)), prevQ=prevTop?prevTop.quality:"";
+  if(!r.quality&&prevTop&&prevTop.id!==r.id&&prevTop.quality) r.quality=prevTop.quality;   // 新しい記録にも一番上の品質を入れる
   const newMon=r.date.slice(0,7), old=recs.find(x=>x.id===r.id);
   if(old&&newMon!==month){ old.del=true; old.u=Date.now(); saveLocal(); const raw=Object.assign({},old); delete raw.u; Sync.queue("rec",month,old.id,raw,old.u); }
-  putRec(r,newMon); $("dlgRec").close(); if(newMon!==month){ toast(`${newMon.replace("-","年")}月の表に保存しました`); setMonth(newMon); } else { render(); toast("保存しました"); } };
+  putRec(r,newMon); { const t=topRec(newMon); if(t&&t.id===r.id&&r.quality) spreadQuality(newMon,prevQ); } $("dlgRec").close(); if(newMon!==month){ toast(`${newMon.replace("-","年")}月の表に保存しました`); setMonth(newMon); } else { render(); toast("保存しました"); } };
 $("btnDel").onclick=()=>{ if(VIEW||!confirm("この記録を削除しますか？")) return; const r=recs.find(x=>x.id===cur.id); if(!r) return; r.del=true; r.u=Date.now(); saveLocal(); const raw=Object.assign({},r); delete raw.u; Sync.queue("rec",month,r.id,raw,r.u); stopMic(); $("dlgRec").close(); render(); toast("削除しました"); };
 
 // ---- 声で入力（ブラウザの音声認識。使えない端末はキーボードのマイクで）----
