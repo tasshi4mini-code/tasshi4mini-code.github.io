@@ -120,7 +120,8 @@ const PROCS=[
   {k:"zokei",name:"造型",   id:"Cetakan", path:"/zokei-nippo/",  c:"#1d4e5c", eq:["1号機","2号機"], date:true, unit:"行"},
   {k:"chuto",name:"注湯",   id:"Penuangan",path:"/chuto2-nippo/",c:"#5c1f16", eq:["1号機","2号機"], date:true, unit:"件"},
   {k:"kensa",name:"検査",   id:"Inspeksi",path:"/kensa-nippo/",  c:"#3d3a8c", eq:null, date:false, unit:"件"},
-  {k:"shot", name:"ショット",id:"Shot",   path:"/shot-nippo/",   c:"#37474f", eq:["ドラムショット","エプロンショット"], date:true, unit:"件"}
+  {k:"shot", name:"ショット",id:"Shot",   path:"/shot-nippo/",   c:"#37474f", eq:["ドラムショット","エプロンショット"], date:true, unit:"件"},
+  {k:"henka",name:"4M変化点",id:"異常・変化点",path:"/henka/",   c:"#4e342e", eq:null, date:false, unit:"件", title:"異常・4M変化点管理表"}
 ];
 const P=Object.fromEntries(PROCS.map(p=>[p.k,p]));
 const ymd=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
@@ -131,7 +132,7 @@ const save=()=>LS.set("kanri:st",{tab:st.tab,mode:st.mode,eq:st.eq});
 // ---- 管理者パスワード（造型日報の config.js の adminPin） ----
 const CFG={};
 async function cfgOf(p){ if(CFG[p.k]!==undefined) return CFG[p.k];
-  try{ const t=await (await fetch(p.path+"config.js",{cache:"no-store"})).text(); const w={}; new Function("window",t)(w); CFG[p.k]=w.SUNA_CONFIG||null; }catch(e){ CFG[p.k]=null; } return CFG[p.k]; }
+  try{ const t=await (await fetch(p.path+"config.js",{cache:"no-store"})).text(); const w={}; new Function("window",t)(w); CFG[p.k]=w.SUNA_CONFIG||w.HENKA_CONFIG||null; }catch(e){ CFG[p.k]=null; } return CFG[p.k]; }
 async function checkLock(){ if(LS.get("kanri:ok",0)>Date.now()) return true;
   $("lock").hidden=false; setTimeout(()=>$("pin").focus(),100);
   const z=await cfgOf(P.zokei); const pin=String((z&&z.adminPin)||"0726");
@@ -148,7 +149,7 @@ function open(k){ st.tab=k; save(); renderProcs();
   const p=P[k]; $("home").hidden=true; $("frameBox").hidden=false; $("sub").hidden=false;
   $("mode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===st.mode));
   $("eqSeg").hidden=!p.eq; $("eqSeg").innerHTML=p.eq?p.eq.map(e=>`<button data-e="${esc(e)}" class="${e===st.eq[k]?"on":""}">${esc(e)}</button>`).join(""):"";
-  $("subNote").textContent=p.date?(st.date===ymd(new Date())?"":`${st.date} の日報`):"日付は日報の「日報一覧」から選べます";
+  $("subNote").textContent=p.k==="henka"?"月は表の上の ◀ ▶ で選べます":p.date?(st.date===ymd(new Date())?"":`${st.date} の日報`):"日付は日報の「日報一覧」から選べます";
   const u=urlOf(p,st.mode); $("ext").href=u; $("frame").src=u; }
 $("procs").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); if(b) open(b.dataset.t); });
 $("mode").addEventListener("click",e=>{ const b=e.target.closest("[data-m]"); if(!b) return; st.mode=b.dataset.m; save(); open(st.tab); });
@@ -168,21 +169,22 @@ function card(p,res){ const D=res.days, err=res.err;
   if(err) body=`<div class="none">⚠ 読み込めませんでした（${esc(err)}）</div>`;
   else if(!D.length) body=`<div class="none">この日の入力はまだありません</div>`;
   else body=D.map(d=>{ const b=[`<span class="badge b-ok">${d.filled||0}${p.unit}</span>`];
-      if(d.ng) b.push(`<span class="badge b-ng">${p.k==="kensa"?"不良 "+d.ng+"個":((p.k==="suna"||p.k==="yokai"?"NG ":"規格外 ")+d.ng)}</span>`);
+      if(d.ng) b.push(`<span class="badge b-ng">${p.k==="kensa"?"不良 "+d.ng+"個":(p.k==="henka"?"処置まだ "+d.ng:((p.k==="suna"||p.k==="yokai"?"NG ":"規格外 ")+d.ng))}</span>`);
       if(d.warn) b.push(`<span class="badge b-w">注意 ${d.warn}</span>`); if(d.stopped) b.push(`<span class="badge">停止 ${d.stopped}</span>`);
       if(d.total) b.push(`<span class="badge">${p.k==="zokei"?"造型 "+d.total+"枠":"総数 "+d.total}</span>`); if(d.balls) b.push(`<span class="badge">玉投入 ${d.balls}回</span>`);
       if(d.events) b.push(`<span class="badge b-w">異常/変化点 ${d.events}</span>`);
-      return `<div class="eqr"><div><b>${esc(d.equip&&d.equip!=="溶解"?d.equip:p.name)}</b> ${b.join("")}</div><div class="subt">${fmtT(d.u)}</div></div>`; }).join("");
-  return `<div class="card" style="--c:${p.c}"><div class="ch"><b>${p.name}日報</b><span class="st">${D&&D.length?"入力あり":""}</span></div><div class="cb">${body}</div>
+      return `<div class="eqr"><div><b>${esc(p.k==="henka"?"今月の記録":(d.equip&&d.equip!=="溶解"?d.equip:p.name))}</b> ${b.join("")}</div><div class="subt">${fmtT(d.u)}</div></div>`; }).join("");
+  return `<div class="card" style="--c:${p.c}"><div class="ch"><b>${p.title||p.name+"日報"}</b><span class="st">${D&&D.length?"入力あり":""}</span></div><div class="cb">${body}</div>
     <div class="cf"><button class="in" data-open="${p.k}" data-m="in">入力</button><button data-open="${p.k}" data-m="view">閲覧</button></div></div>`; }
 let loading=0;
 async function loadStatus(){ const my=++loading, date=st.date, month=date.slice(0,7);
   $("cards").innerHTML=PROCS.map(p=>card(p,{days:[],err:""}).replace("この日の入力はまだありません","読み込み中…")).join("");
   $("sum").innerHTML=`<b>${date.replace(/^(\d+)-0?(\d+)-0?(\d+)$/,"$2月$3日")}</b><span class="subt">の入力状況</span>`;
-  const res=await Promise.all(PROCS.map(p=>listOf(p,month).then(L=>({days:L.filter(d=>d.date===date).sort((a,b)=>String(a.equip).localeCompare(String(b.equip))),err:""}),e=>({days:[],err:String(e.message||e)}))));
+  const monSum=L=>{ const D=L.filter(d=>String(d.date).slice(0,7)===month); return D.length?[{equip:"今月",filled:D.reduce((a,d)=>a+(d.filled||0),0),ng:D.reduce((a,d)=>a+(d.ng||0),0),u:Math.max(...D.map(d=>d.u||0))}]:[]; };
+  const res=await Promise.all(PROCS.map(p=>listOf(p,month).then(L=>p.k==="henka"?{days:monSum(L),err:""}:({days:L.filter(d=>d.date===date).sort((a,b)=>String(a.equip).localeCompare(String(b.equip))),err:""}),e=>({days:[],err:String(e.message||e)}))));
   if(my!==loading) return;
   $("cards").innerHTML=PROCS.map((p,i)=>card(p,res[i])).join("");
-  const n=res.filter(r=>r.days.length).length; $("sum").innerHTML+=` <span class="badge ${n===PROCS.length?"b-ok":"b-w"}">${n} / ${PROCS.length} 工程で入力あり</span> <span class="subt">${fmtT(Date.now())} 更新</span>`; }
+  const PN=PROCS.filter(p=>p.k!=="henka").length, n=res.filter((r,i)=>PROCS[i].k!=="henka"&&r.days.length).length; $("sum").innerHTML+=` <span class="badge ${n===PN?"b-ok":"b-w"}">${n} / ${PN} 工程で入力あり</span> <span class="subt">${fmtT(Date.now())} 更新</span>`; }
 // 画面の中の日報が横にはみ出さないようにする（同じサイトなので中に指定を足せる）
 $("frame").addEventListener("load",()=>{ try{ const d=$("frame").contentDocument; if(!d||!d.head||d.getElementById("kanriFit")) return;
   const st=d.createElement("style"); st.id="kanriFit"; st.textContent="html,body{max-width:100%;overflow-x:clip}main{max-width:100%}"; d.head.appendChild(st); }catch(e){} });
