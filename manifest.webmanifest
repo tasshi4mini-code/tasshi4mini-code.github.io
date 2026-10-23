@@ -1,6 +1,6 @@
 {
-  "name": "鋳造課 日報メニュー",
-  "short_name": "鋳造課日報",
+  "name": "造型・注湯メニュー",
+  "short_name": "造型注湯メニュー",
   "description": "鋳造課の日報アプリの入口（造型日報・注湯日報）",
   "lang": "ja",
   "start_url": "/",
