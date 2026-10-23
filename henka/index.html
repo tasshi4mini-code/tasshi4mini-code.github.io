@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>異常・4M変化点管理表</title>
+<link rel="manifest" href="/henka/manifest.webmanifest">
+<meta name="theme-color" content="#4e342e">
+<link rel="icon" href="/henka/icon-192.png">
+<link rel="apple-touch-icon" href="/henka/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="4M変化点">
+<script src="/henka/config.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body,a,button,select,input,textarea,label{touch-action:manipulation}
+body{margin:0;background:#f3f1ef;color:#1d2330;font-family:"Meiryo","Yu Gothic UI","Hiragino Sans",sans-serif;font-size:16px}
+button,select,input,textarea{font-family:inherit;font-size:17px}
+header{background:#4e342e;color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:10}
+header h1{font-size:19px;margin:0 8px 0 0}
+.mon{display:flex;align-items:center;gap:6px}
+.mon button{min-height:40px;min-width:44px;border-radius:8px;border:1px solid #a1887f;background:transparent;color:#fff}
+.mon input{font-size:17px;min-height:40px;border-radius:8px;border:0;padding:2px 8px}
+.sp{flex:1}
+.hb{min-height:40px;border-radius:8px;border:1px solid #a1887f;background:transparent;color:#fff;padding:4px 12px;cursor:pointer}
+.hb.pri{background:#1f5fbf;border-color:#1f5fbf;font-weight:bold}
+.sync{font-size:13px;padding:6px 10px;border-radius:999px;border:1px solid #a1887f;color:#fff;background:transparent;min-height:34px}
+.sync.ok{background:#1f7a46;border-color:#1f7a46}.sync.wait{background:#b7791f;border-color:#b7791f}.sync.err{background:#b00020;border-color:#b00020}.sync.off{background:#6b7280}
+main{max-width:1300px;margin:0 auto;padding:14px;display:grid;gap:14px}
+.card{background:#fff;border:1px solid #ddd5d0;border-radius:12px;padding:14px}
+.card h2{font-size:17px;margin:0 0 10px;border-left:5px solid #6d4c41;padding-left:8px}
+.top{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;align-items:start}
+.notice{background:#fff7e6;border:1px solid #f0c36d;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.7}
+.stamps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:#5d6778}
+select,input,textarea{border:1px solid #b9c2cf;border-radius:8px;padding:8px 10px;background:#fff;color:#1d2330;min-height:48px;width:100%}
+textarea{min-height:110px;font-size:18px;line-height:1.5;resize:vertical}
+details.m4{margin-top:10px}details.m4 summary{cursor:pointer;font-weight:bold;color:#6d4c41;font-size:15px}
+table{border-collapse:collapse;width:100%}
+.ref th,.ref td{border:1px solid #9aa4b3;padding:5px 8px;font-size:13px;text-align:center}
+.ref th{background:#eceff1}
+.ref td:first-child{background:#eceff1;font-weight:bold;width:56px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.add{min-height:56px;font-size:19px;font-weight:bold;border-radius:12px;border:0;background:#6d4c41;color:#fff;padding:0 22px;cursor:pointer}
+.flt{width:auto;min-height:44px}
+.cnt{font-size:14px;color:#5d6778}
+.list th,.list td{border:1px solid #c9ced6;padding:6px 6px;text-align:center;vertical-align:middle}
+.list th{background:#e8e3e0;font-size:13px;position:sticky;top:0}
+.list td.tx{text-align:left;line-height:1.45;word-break:break-all}
+.list tbody tr{cursor:pointer}.list tbody tr:hover{background:#f7f2ee}
+.list td.dt{white-space:nowrap}
+.tx.s1{font-size:15px}.tx.s2{font-size:13.5px}.tx.s3{font-size:12px}
+.m4b{display:inline-block;padding:1px 8px;border-radius:999px;font-size:13px;font-weight:bold;color:#fff}
+.m4-人{background:#1565c0}.m4-設備{background:#2e7d32}.m4-材料{background:#e65100}.m4-方法{background:#6a1b9a}
+.pend{color:#b00020;font-weight:bold;font-size:13px}
+.tblw{overflow-x:auto}
+.cards{display:none}
+.rc{border:1px solid #ddd5d0;border-radius:12px;padding:10px 12px;margin-bottom:10px;cursor:pointer;background:#fff}
+.rc .h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;color:#5d6778}
+.rc .h b{color:#1d2330;font-size:16px}
+.rc .c{margin:6px 0;font-size:16px;line-height:1.5;word-break:break-all}
+.rc .r{font-size:15px;line-height:1.5;color:#2e3b4e;background:#f5f7fa;border-radius:8px;padding:6px 8px;word-break:break-all}
+dialog{border:none;border-radius:14px;padding:0;max-width:760px;width:calc(100% - 20px);max-height:calc(100dvh - 20px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg{padding:16px}
+.dlg h3{margin:0 0 10px}
+.fg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 12px}
+.fg .w2{grid-column:span 2}.fg .w4{grid-column:1/-1}
+.tcell{display:flex;gap:6px}.tcell input{flex:1;min-width:0}.tcell button{min-width:56px;border-radius:8px;border:1px solid #b9c2cf;background:#fff}
+.sec{border-top:2px dashed #e0d8d3;margin-top:12px;padding-top:10px;font-weight:bold;color:#6d4c41}
+.mic{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.mic button{min-height:44px;border-radius:999px;border:2px solid #c62828;background:#fff;color:#c62828;font-weight:bold;padding:0 16px;cursor:pointer}
+.mic button.on{background:#c62828;color:#fff;animation:pulse 1s infinite alternate}
+@keyframes pulse{from{box-shadow:0 0 0 0 rgba(198,40,40,.0)}to{box-shadow:0 0 0 6px rgba(198,40,40,.3)}}
+.mic small{color:#5d6778;font-size:12px}
+.len{font-size:12px;color:#5d6778;text-align:right}
+.btns{display:flex;gap:8px;justify-content:space-between;margin-top:14px;flex-wrap:wrap}
+.btns button{min-height:50px;border-radius:10px;padding:0 18px;border:1px solid #b9c2cf;background:#fff;font-weight:bold}
+.btns .pri{background:#6d4c41;color:#fff;border-color:#6d4c41;min-width:140px}
+.btns .del{color:#b00020;border-color:#e5a3a3}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#3e2723;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none;z-index:99;max-width:90vw}
+#toast.show{opacity:1}
+.small{font-size:13px;color:#5d6778}
+body.view .add,body.view .btns .pri,body.view .btns .del,body.view .mic{display:none}
+.viewbadge{background:#ffeb3b;color:#000;font-weight:bold;border-radius:6px;padding:2px 8px;font-size:14px}
+@media (max-width:820px){
+  .top{grid-template-columns:1fr}
+  .tblw{display:none}.cards{display:block}
+  .fg{grid-template-columns:1fr 1fr}.fg .w2{grid-column:1/-1}
+  header h1{font-size:17px;width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>異常・4M変化点管理表 <span class="viewbadge" id="viewBadge" hidden>閲覧用</span></h1>
+  <div class="mon"><button id="mPrev" aria-label="前の月">◀</button><input type="month" id="month"><button id="mNext" aria-label="次の月">▶</button></div>
+  <button class="sync" id="syncStat" hidden>同期</button>
+  <span class="sp"></span>
+  <button class="hb" id="btnSettings">設定</button>
+  <button class="hb pri" id="btnXlsx">Excel保存</button>
+</header>
+<main>
+  <section class="card">
+    <div class="top">
+      <div>
+        <div class="notice"><b>&lt;注意事項&gt;</b><br>工程外へ不良品が流出した可能性がある場合は、品管に連絡し品管が判断のこと。<br>また、トライや初品を行った場合は品管が評価を実施すること。</div>
+        <details class="m4"><summary>4M区分の見分け方（はじめて／変更／久しぶり）</summary>
+          <table class="ref" style="margin-top:8px"><tr><th></th><th>はじめて</th><th>変更</th><th>久しぶり</th></tr>
+            <tr><td>人</td><td>新人教育</td><td>部署異動／配置変更</td><td>助っ人（応援）／職場復帰</td></tr>
+            <tr><td>設備</td><td>設備、工具、治具等の新設</td><td>改造／故障(修理)／定期交換</td><td>遊休設備再稼働</td></tr>
+            <tr><td>材料</td><td>新規の原材料、副資材／過去に例のない不良発生</td><td>原材料、副資材の変更</td><td>再発不良／半年以上保管</td></tr>
+            <tr><td>方法</td><td>初めての製造／検査／管理</td><td>製造条件変更／標準作業の変更／トライ</td><td>半年以上間隔が空いた作業</td></tr></table>
+        </details>
+      </div>
+      <div>
+        <div class="small" style="margin-bottom:6px"><b>品管</b>（この月の表）</div>
+        <div class="stamps">
+          <label class="f">承認<select id="hApprove"></select></label>
+          <label class="f">確認<select id="hConfirm"></select></label>
+        </div>
+        <div class="small" style="margin-top:8px">鋳造課 <b id="monLabel"></b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="bar">
+      <button class="add" id="btnAdd">＋ 異常・変化点を記録する</button>
+      <select class="flt" id="fProc"><option value="">工程：すべて</option></select>
+      <select class="flt" id="fM4"><option value="">4M：すべて</option></select>
+      <span class="cnt" id="cnt"></span>
+    </div>
+    <div class="tblw"><table class="list">
+      <colgroup><col style="width:58px"><col style="width:58px"><col style="width:62px"><col style="width:70px"><col><col style="width:58px"><col style="width:58px"><col><col style="width:70px"><col style="width:70px"></colgroup>
+      <thead><tr><th>日付</th><th>時刻</th><th>4M区分</th><th>工程</th><th>異常・変化点内容</th><th colspan="3">処置・結果（日時／詳細／評価）</th><th>確認者</th><th>品質</th></tr></thead>
+      <tbody id="tbody"></tbody></table></div>
+    <div class="cards" id="cards"></div>
+  </section>
+  <p class="small" style="text-align:center">入力内容は自動で保存・共有されます（スプレッドシートにも月ごとの表ができます）。</p>
+</main>
+
+<dialog id="dlgRec"><div class="dlg">
+  <h3 id="recTitle">異常・変化点を記録</h3>
+  <div class="fg">
+    <label class="f">日付<input type="date" id="rDate"></label>
+    <div class="f"><span class="small">時刻</span><div class="tcell"><input type="time" id="rTime"><button type="button" data-now="rTime">今</button></div></div>
+    <label class="f">4M区分<select id="rM4"></select></label>
+    <label class="f">工程<select id="rProc"></select></label>
+    <label class="f w4">異常・変化点内容<textarea id="rContent" lang="ja" placeholder="例）リフマグクレーン故障"></textarea>
+      <div class="mic"><button type="button" data-mic="rContent">🎤 声で入力</button><small id="micHint1"></small><span class="len" id="len1" style="margin-left:auto"></span></div></label>
+    <div class="sec w4">処置・結果（日時／詳細／評価）</div>
+    <label class="f">処置の日付<input type="date" id="rRDate"></label>
+    <div class="f"><span class="small">処置の時刻</span><div class="tcell"><input type="time" id="rRTime"><button type="button" data-now="rRTime">今</button></div></div>
+    <label class="f">確認者<select id="rChecker"></select></label>
+    <label class="f">品質<select id="rQuality"></select></label>
+    <label class="f w4">処置・結果<textarea id="rResult" lang="ja" placeholder="例）ドラムリール内のショート　応急修理"></textarea>
+      <div class="mic"><button type="button" data-mic="rResult">🎤 声で入力</button><small id="micHint2"></small><span class="len" id="len2" style="margin-left:auto"></span></div></label>
+  </div>
+  <div class="btns"><button class="del" id="btnDel">削除</button><span style="flex:1"></span><button id="btnCancel">閉じる</button><button class="pri" id="btnSave">保存</button></div>
+</div></dialog>
+
+<dialog id="dlgSettings"><div class="dlg">
+  <h3>設定</h3>
+  <div class="small">名前は「＋ 追加」で足せます（全端末で共通）。ここでは送信先の確認ができます。</div>
+  <label class="f" style="margin-top:10px">送信先URL (Apps Script)<input id="cfgUrl" placeholder="https://script.google.com/macros/s/.../exec"></label>
+  <label class="f" style="margin-top:8px">合言葉<input id="cfgToken"></label>
+  <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button id="btnCfgSave" style="min-height:44px;border-radius:8px">この端末に保存</button><button id="btnCfgTest" style="min-height:44px;border-radius:8px">接続テスト</button></div>
+  <div class="small" id="cfgInfo" style="margin-top:6px"></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:14px"><button id="btnSetClose" style="min-height:44px;border-radius:8px;padding:0 18px">閉じる</button></div>
+</div></dialog>
+<div id="toast"></div>
+
+<script>
+const XE = s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"");
+function colName(c){ let s=""; c++; while(c>0){ const m=(c-1)%26; s=String.fromCharCode(65+m)+s; c=Math.floor((c-1)/26);} return s; }
+function ref(c,r){ return colName(c)+(r+1); }
+function asVal(v){ if(v===""||v==null) return null; if(typeof v==="number") return v; const s=String(v).trim(); if(/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s); return s; }
+// style registry
+const XS={fonts:['<font><sz val="11"/><name val="Meiryo UI"/></font>','<font><b/><sz val="11"/><name val="Meiryo UI"/></font>','<font><b/><sz val="11"/><color rgb="FFB00020"/><name val="Meiryo UI"/></font>','<font><b/><sz val="16"/><name val="Meiryo UI"/></font>','<font><sz val="9"/><color rgb="FF5D6778"/><name val="Meiryo UI"/></font>'],
+  fills:{none:0,gray:1,head:2,warn:3,ng:4,off:5,sel:6},
+  fillXml:['<fill><patternFill patternType="none"/></fill>','<fill><patternFill patternType="gray125"/></fill>','<fill><patternFill patternType="solid"><fgColor rgb="FFEEF1F6"/></patternFill></fill>','<fill><patternFill patternType="solid"><fgColor rgb="FFFFF3C4"/></patternFill></fill>','<fill><patternFill patternType="solid"><fgColor rgb="FFFFDCDC"/></patternFill></fill>','<fill><patternFill patternType="solid"><fgColor rgb="FFE8EAEE"/></patternFill></fill>','<fill><patternFill patternType="solid"><fgColor rgb="FFE3EEFF"/></patternFill></fill>'],
+  fmts:{gen:0,d2:164,d1:165}, xfs:[], map:{}};
+function st(o){ o=Object.assign({font:0,fill:"none",border:0,fmt:"gen",h:"",wrap:false},o||{});
+  const k=JSON.stringify(o); if(XS.map[k]!=null) return XS.map[k];
+  const al = (o.h||o.wrap) ? `<alignment${o.h?` horizontal="${o.h}"`:""} vertical="center"${o.wrap?' wrapText="1"':""}/>` : '<alignment vertical="center"/>';
+  XS.xfs.push(`<xf numFmtId="${XS.fmts[o.fmt]}" fontId="${o.font}" fillId="${XS.fills[o.fill]}" borderId="${o.border}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyNumberFormat="1" applyAlignment="1">${al}</xf>`);
+  return XS.map[k]=XS.xfs.length-1; }
+st({}); // index 0
+function stylesXml(){ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+ '<numFmts count="2"><numFmt numFmtId="164" formatCode="0.00"/><numFmt numFmtId="165" formatCode="0.0"/></numFmts>'+
+ `<fonts count="${XS.fonts.length}">${XS.fonts.join("")}</fonts><fills count="${XS.fillXml.length}">${XS.fillXml.join("")}</fills>`+
+ '<borders count="2"><border/><border><left style="thin"><color rgb="FF808A99"/></left><right style="thin"><color rgb="FF808A99"/></right><top style="thin"><color rgb="FF808A99"/></top><bottom style="thin"><color rgb="FF808A99"/></bottom></border></borders>'+
+ '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+ `<cellXfs count="${XS.xfs.length}">${XS.xfs.join("")}</cellXfs><cellStyles count="1"><cellStyle name="標準" xfId="0" builtinId="0"/></cellStyles></styleSheet>`; }
+// sheet builder
+function Sheet(name){ this.name=name; this.cells={}; this.merges=[]; this.cols=[]; this.heights={}; this.maxR=0; this.maxC=0; this.freeze=null; this.landscape=false; }
+Sheet.prototype.set=function(c,r,v,s){ this.cells[r]=this.cells[r]||{}; this.cells[r][c]={v:asVal(v),s:s||0}; this.maxR=Math.max(this.maxR,r); this.maxC=Math.max(this.maxC,c); };
+Sheet.prototype.merge=function(c1,r1,c2,r2,v,s){ for(let r=r1;r<=r2;r++) for(let c=c1;c<=c2;c++) this.set(c,r,(r===r1&&c===c1)?v:"",s); if(c1!==c2||r1!==r2) this.merges.push(ref(c1,r1)+":"+ref(c2,r2)); };
+Sheet.prototype.xml=function(){
+  let x='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
+  x+= this.landscape ? '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>' : '';
+  x+='<sheetViews><sheetView workbookViewId="0"'+(this.showGrid===false?' showGridLines="0"':'')+'>';
+  if(this.freeze) x+=`<pane ySplit="${this.freeze}" topLeftCell="A${this.freeze+1}" activePane="bottomLeft" state="frozen"/>`;
+  x+='</sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/>';
+  if(this.cols.length) x+='<cols>'+this.cols.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")+'</cols>';
+  x+='<sheetData>';
+  for(let r=0;r<=this.maxR;r++){ const row=this.cells[r]; const h=this.heights[r];
+    if(!row && !h) continue;
+    x+=`<row r="${r+1}"${h?` ht="${h}" customHeight="1"`:""}>`;
+    if(row) Object.keys(row).map(Number).sort((a,b)=>a-b).forEach(c=>{ const {v,s}=row[c]; const rf=ref(c,r);
+      if(v==null) x+=`<c r="${rf}" s="${s}"/>`;
+      else if(typeof v==="number") x+=`<c r="${rf}" s="${s}"><v>${v}</v></c>`;
+      else x+=`<c r="${rf}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${XE(v)}</t></is></c>`; });
+    x+='</row>'; }
+  x+='</sheetData>';
+  if(this.autoFilter) x+=`<autoFilter ref="${this.autoFilter}"/>`;
+  if(this.merges.length) x+=`<mergeCells count="${this.merges.length}">`+this.merges.map(m=>`<mergeCell ref="${m}"/>`).join("")+'</mergeCells>';
+  x+='<pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/>';
+  if(this.landscape) x+='<pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/>';
+  return x+'</worksheet>'; };
+// zip (store)
+const CRC=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=CRC[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zip(files){ const enc=new TextEncoder(); const parts=[], cen=[]; let off=0;
+  const d=new Date(), dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(), tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1);
+  files.forEach(f=>{ const nm=enc.encode(f.name), data=enc.encode(f.data), crc=crc32(data);
+    const h=new DataView(new ArrayBuffer(30)); h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true); h.setUint16(10,tm,true); h.setUint16(12,dt,true); h.setUint32(14,crc,true); h.setUint32(18,data.length,true); h.setUint32(22,data.length,true); h.setUint16(26,nm.length,true); h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nm,data);
+    const c=new DataView(new ArrayBuffer(46)); c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true); c.setUint16(10,0,true); c.setUint16(12,tm,true); c.setUint16(14,dt,true); c.setUint32(16,crc,true); c.setUint32(20,data.length,true); c.setUint32(24,data.length,true); c.setUint16(28,nm.length,true); c.setUint32(42,off,true);
+    cen.push(new Uint8Array(c.buffer),nm); off+=30+nm.length+data.length; });
+  const csize=cen.reduce((a,b)=>a+b.length,0); const e=new DataView(new ArrayBuffer(22)); e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true); e.setUint32(12,csize,true); e.setUint32(16,off,true);
+  return new Blob([...parts,...cen,new Uint8Array(e.buffer)],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}); }
+function workbook(sheets){
+  const files=[
+   {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")+'</Types>'},
+   {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+   {name:"xl/workbook.xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+sheets.map((s,i)=>`<sheet name="${XE(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")+'</sheets>'+
+     (sheets.some(s=>s.autoFilter)?'<definedNames>'+sheets.map((s,i)=>s.autoFilter?`<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${XE(s.name)}'!$${s.autoFilter.replace(":",":$").replace(/([A-Z]+)(\d+)/g,"$1$$$2")}</definedName>`:"").join("")+'</definedNames>':'')+'</workbook>'},
+   {name:"xl/_rels/workbook.xml.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")+`<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`}];
+  const sx=sheets.map((s,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:s.xml()}));
+  files.push({name:"xl/styles.xml",data:stylesXml()}, ...sx);
+  return zip(files); }
+
+
+(function(){
+"use strict";
+const APP="henka", CFG=window.HENKA_CONFIG||{};
+const VIEW=/[?&#]view\b/.test(location.search+location.hash); if(VIEW){ document.body.classList.add("view"); }
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LS={ get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch(e){return d;} }, set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} } };
+const M4=["人","設備","材料","方法"];
+const PROCS=CFG.procs||["溶解","注湯","砂処理","造型","セキ","ショット","型"];
+const DEF={checker:CFG.checkers||["皓輝","平野"],quality:CFG.quality||["谷川"]};
+const ymd=d=>new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+const nowHM=()=>{ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const md=d=>{ const m=/^\d{4}-(\d{2})-(\d{2})$/.exec(d||""); return m?`${+m[1]}/${+m[2]}`:""; };
+const hm=t=>t?t.replace(/^0(\d):/,"$1:"):"";
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2600); }
+let month=ymd(new Date()).slice(0,7), recs=[], head={approve:"",confirm:"",u:0}, names=LS.get(APP+":names",null)||{checker:DEF.checker.slice(),quality:DEF.quality.slice(),u:0};
+const key=()=>APP+":m:"+month;
+function loadLocal(){ const s=LS.get(key(),null)||{recs:[],head:{approve:"",confirm:"",u:0}}; recs=s.recs||[]; head=s.head||{approve:"",confirm:"",u:0}; }
+function saveLocal(){ LS.set(key(),{recs,head}); }
+const live=()=>recs.filter(r=>!r.del).sort((a,b)=>(a.date+(a.time||"99:99")).localeCompare(b.date+(b.time||"99:99")));
+const sz=t=>{ const n=String(t||"").length; return n>60?"s3":n>34?"s2":"s1"; };
+
+// ---- 同期（スプレッドシート）----
+const Sync=(function(){
+  let cfg=Object.assign({syncUrl:"",token:""},CFG,LS.get(APP+":cfg",{}));
+  let q=LS.get(APP+":queue",[]), busy=false, timer=null, lastErr="";
+  const on=()=>!!cfg.syncUrl, persist=()=>LS.set(APP+":queue",q);
+  function queue(type,mon,ref,raw,u){ if(!on()||VIEW) return; const k=`${type}|${mon}|${ref}`; q=q.filter(x=>x.k!==k); q.push({k,op:{type,date:mon,equip:"4M",ref:String(ref),u,raw}}); persist(); status(); clearTimeout(timer); timer=setTimeout(flush,800); }
+  async function call(params,body){ const url=cfg.syncUrl+(params?(cfg.syncUrl.includes("?")?"&":"?")+new URLSearchParams(params):"");
+    const r=await fetch(url,body?{method:"POST",body:JSON.stringify(body),redirect:"follow"}:{redirect:"follow"}); const j=await r.json(); if(!j.ok) throw new Error(j.error||"error"); return j; }
+  async function flush(){ if(!on()||busy||!q.length||navigator.onLine===false){ status(); return; } busy=true;
+    try{ while(q.length){ const b=q.slice(0,30); await call(null,{token:cfg.token,ops:b.map(x=>x.op)}); const sent=new Map(b.map(x=>[x.k,x.op.u])); q=q.filter(x=>!(sent.has(x.k)&&x.op.u===sent.get(x.k))); persist(); } lastErr=""; }
+    catch(e){ lastErr=String(e.message||e); } busy=false; status(); }
+  const pending=k=>q.some(x=>x.k===k);
+  async function pull(){ if(!on()||navigator.onLine===false) return; const mon=month; let j;
+    try{ j=await call({action:"load",token:cfg.token,date:mon,equip:"4M"}); lastErr=""; }catch(e){ lastErr=String(e.message||e); status(); return; }
+    if(mon!==month) return; let ch=false;
+    (j.items||[]).forEach(it=>{ if(pending(`${it.type}|${mon}|${it.ref}`)) return; const raw=it.raw||{};
+      if(it.type==="header"){ if((it.u||0)>(head.u||0)){ head=Object.assign({approve:"",confirm:""},raw,{u:it.u}); ch=true; } }
+      else if(it.type==="rec"){ const i=recs.findIndex(r=>r.id===it.ref); const r=Object.assign({},raw,{id:it.ref,u:it.u});
+        if(i<0){ recs.push(r); ch=true; } else if((it.u||0)>(recs[i].u||0)){ recs[i]=r; ch=true; } } });
+    if(j.names&&j.names.u>(names.u||0)){ names=j.names; LS.set(APP+":names",names); ch=true; }
+    if(ch){ saveLocal(); render(); }
+    status(); }
+  async function addName(kind,name){ names[kind]=[...(names[kind]||[]),name]; names.u=Date.now(); LS.set(APP+":names",names); if(!on()) return;
+    try{ const j=await call(null,{token:cfg.token,action:"addName",kind,name}); if(j.names){ names=j.names; LS.set(APP+":names",names); } }catch(e){} }
+  function status(){ const b=$("syncStat"); if(!on()){ b.hidden=true; return; } b.hidden=false; const n=q.length;
+    if(navigator.onLine===false){ b.className="sync off"; b.textContent=n?`オフライン (未送信 ${n}件)`:"オフライン"; }
+    else if(lastErr){ b.className="sync err"; b.textContent=n?`送信エラー (未送信 ${n}件)`:"接続エラー"; b.title=lastErr; }
+    else if(n){ b.className="sync wait"; b.textContent=`送信中… ${n}件`; } else { b.className="sync ok"; b.textContent="同期済み ✓"; } }
+  async function test(){ if(!on()) return "送信先URLが未設定です"; try{ const j=await call({action:"ping",token:cfg.token}); return "接続OK ("+(j.sheet||"")+")"; }catch(e){ return "接続できません: "+(e.message||e); } }
+  function setCfg(u,t){ const o={}; if(u) o.syncUrl=u; if(t) o.token=t; LS.set(APP+":cfg",o); cfg=Object.assign({syncUrl:"",token:""},CFG,o); status(); }
+  window.addEventListener("online",()=>flush().then(pull));
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") flush().then(pull); });
+  setInterval(()=>{ if(document.visibilityState==="visible") flush().then(pull); },45000);
+  return {queue,flush,pull,status,test,setCfg,cfg:()=>cfg,addName};
+})();
+
+// ---- 表示 ----
+function opts(sel,list,val,blank,add){ const L=list.slice(); if(val&&!L.includes(val)) L.push(val);
+  sel.innerHTML=(blank!=null?`<option value="">${blank}</option>`:"")+L.map(v=>`<option ${v===val?"selected":""}>${esc(v)}</option>`).join("")+(add?`<option value="__add">＋ 追加</option>`:""); }
+function render(){
+  $("month").value=month; $("monLabel").textContent=month.replace(/^(\d+)-0?(\d+)$/,"$1年 $2月");
+  opts($("hApprove"),names.quality,head.approve,"－",true); opts($("hConfirm"),names.quality,head.confirm,"－",true);
+  $("hApprove").disabled=$("hConfirm").disabled=VIEW;
+  const fp=$("fProc").value, fm=$("fM4").value, L=live().filter(r=>(!fp||r.proc===fp)&&(!fm||r.m4===fm));
+  $("cnt").textContent=`${L.length}件`+(live().filter(r=>!r.result).length?`（処置まだ ${live().filter(r=>!r.result).length}件）`:"");
+  $("tbody").innerHTML=L.length?L.map(r=>`<tr data-id="${r.id}"><td class="dt">${md(r.date)}</td><td>${hm(r.time)||"："}</td><td>${r.m4?`<span class="m4b m4-${esc(r.m4)}">${esc(r.m4)}</span>`:""}</td><td>${esc(r.proc)}</td><td class="tx ${sz(r.content)}">${esc(r.content)}</td>
+    <td class="dt">${md(r.rdate)}</td><td>${hm(r.rtime)||"："}</td><td class="tx ${sz(r.result)}">${r.result?esc(r.result):'<span class="pend">処置まだ</span>'}</td><td>${esc(r.checker)}</td><td>${esc(r.quality)}</td></tr>`).join("")
+    :`<tr><td colspan="10" class="small" style="padding:16px">この月の記録はまだありません</td></tr>`;
+  $("cards").innerHTML=L.length?L.map(r=>`<div class="rc" data-id="${r.id}"><div class="h"><b>${md(r.date)} ${hm(r.time)}</b>${r.m4?`<span class="m4b m4-${esc(r.m4)}">${esc(r.m4)}</span>`:""}<span>${esc(r.proc)}</span><span style="margin-left:auto">${r.checker?"確認 "+esc(r.checker):""}${r.quality?"・品質 "+esc(r.quality):""}</span></div>
+    <div class="c">${esc(r.content)}</div><div class="r">${r.result?`<b>${md(r.rdate)} ${hm(r.rtime)}</b>　${esc(r.result)}`:'<span class="pend">処置まだ</span>'}</div></div>`).join(""):`<div class="small" style="padding:10px">この月の記録はまだありません</div>`;
+}
+function setMonth(m){ Sync.flush(); month=m; loadLocal(); render(); Sync.pull(); }
+const shift=(m,n)=>{ const [y,mm]=m.split("-").map(Number); const d=new Date(y,mm-1+n,1); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); };
+$("mPrev").onclick=()=>setMonth(shift(month,-1)); $("mNext").onclick=()=>setMonth(shift(month,1));
+$("month").onchange=()=>{ if($("month").value) setMonth($("month").value); };
+$("fProc").innerHTML+=PROCS.map(p=>`<option>${esc(p)}</option>`).join(""); $("fM4").innerHTML+=M4.map(p=>`<option>${p}</option>`).join("");
+$("fProc").onchange=render; $("fM4").onchange=render;
+function addFlow(sel,kind,cb){ let v=sel.value; if(v==="__add"){ v=(prompt(kind==="checker"?"確認者の名前を入れてください":"品質（品管）の名前を入れてください")||"").trim(); if(!v){ cb(null); return; } if(!(names[kind]||[]).includes(v)) Sync.addName(kind,v); } cb(v); }
+["hApprove","hConfirm"].forEach(id=>$(id).addEventListener("change",e=>{ addFlow(e.target,"quality",v=>{ if(v==null){ render(); return; } head[id==="hApprove"?"approve":"confirm"]=v; head.u=Date.now(); saveLocal(); Sync.queue("header",month,"",{approve:head.approve,confirm:head.confirm},head.u); render(); }); }));
+
+// ---- 記録の入力 ----
+let cur=null;
+function openRec(r){ cur=r?Object.assign({},r):{id:uid(),date:ymd(new Date()),time:nowHM(),m4:"",proc:"",content:"",rdate:"",rtime:"",result:"",checker:LS.get(APP+":lastChecker",""),quality:""};
+  $("recTitle").textContent=r?"記録を直す":"異常・変化点を記録"; $("btnDel").hidden=!r;
+  $("rDate").value=cur.date; $("rTime").value=cur.time; opts($("rM4"),M4,cur.m4,"－選択－"); opts($("rProc"),PROCS,cur.proc,"－選択－");
+  $("rContent").value=cur.content; $("rRDate").value=cur.rdate; $("rRTime").value=cur.rtime; $("rResult").value=cur.result;
+  opts($("rChecker"),names.checker,cur.checker,"－",true); opts($("rQuality"),names.quality,cur.quality,"－",true);
+  document.querySelectorAll("#dlgRec input,#dlgRec select,#dlgRec textarea").forEach(el=>el.disabled=VIEW);
+  lens(); $("dlgRec").showModal(); }
+function lens(){ $("len1").textContent=$("rContent").value.length+"文字"; $("len2").textContent=$("rResult").value.length+"文字"; }
+$("rContent").addEventListener("input",lens); $("rResult").addEventListener("input",lens);
+$("rResult").addEventListener("input",()=>{ if($("rResult").value&&!$("rRDate").value){ $("rRDate").value=ymd(new Date()); $("rRTime").value=nowHM(); } });
+["rChecker","rQuality"].forEach(id=>$(id).addEventListener("change",e=>addFlow(e.target,id==="rChecker"?"checker":"quality",v=>{ const L=id==="rChecker"?names.checker:names.quality; opts(e.target,L,v||"","－",true); })));
+document.querySelectorAll("[data-now]").forEach(b=>b.onclick=()=>{ $(b.dataset.now).value=nowHM(); if(b.dataset.now==="rRTime"&&!$("rRDate").value) $("rRDate").value=ymd(new Date()); });
+$("btnAdd").onclick=()=>openRec(null);
+$("tbody").addEventListener("click",e=>{ const tr=e.target.closest("tr[data-id]"); if(tr) openRec(recs.find(r=>r.id===tr.dataset.id)); });
+$("cards").addEventListener("click",e=>{ const c=e.target.closest("[data-id]"); if(c) openRec(recs.find(r=>r.id===c.dataset.id)); });
+$("btnCancel").onclick=()=>{ stopMic(); $("dlgRec").close(); };
+function putRec(r,mon){ const i=recs.findIndex(x=>x.id===r.id); if(mon===month){ if(i<0) recs.push(r); else recs[i]=r; saveLocal(); }
+  else { const s=LS.get(APP+":m:"+mon,null)||{recs:[],head:{}}; const j=s.recs.findIndex(x=>x.id===r.id); if(j<0) s.recs.push(r); else s.recs[j]=r; LS.set(APP+":m:"+mon,s); }
+  const raw=Object.assign({},r); delete raw.u; Sync.queue("rec",mon,r.id,raw,r.u); }
+$("btnSave").onclick=()=>{ if(VIEW) return; stopMic();
+  const r=Object.assign(cur,{date:$("rDate").value,time:$("rTime").value,m4:$("rM4").value,proc:$("rProc").value,content:$("rContent").value.trim(),rdate:$("rRDate").value,rtime:$("rRTime").value,result:$("rResult").value.trim(),checker:$("rChecker").value==="__add"?"":$("rChecker").value,quality:$("rQuality").value==="__add"?"":$("rQuality").value,u:Date.now()});
+  if(!r.date){ toast("日付を入れてください"); return; } if(!r.content){ toast("異常・変化点内容を入れてください"); return; }
+  if(r.checker) LS.set(APP+":lastChecker",r.checker);
+  const newMon=r.date.slice(0,7), old=recs.find(x=>x.id===r.id);
+  if(old&&newMon!==month){ old.del=true; old.u=Date.now(); saveLocal(); const raw=Object.assign({},old); delete raw.u; Sync.queue("rec",month,old.id,raw,old.u); }
+  putRec(r,newMon); $("dlgRec").close(); if(newMon!==month){ toast(`${newMon.replace("-","年")}月の表に保存しました`); setMonth(newMon); } else { render(); toast("保存しました"); } };
+$("btnDel").onclick=()=>{ if(VIEW||!confirm("この記録を削除しますか？")) return; const r=recs.find(x=>x.id===cur.id); if(!r) return; r.del=true; r.u=Date.now(); saveLocal(); const raw=Object.assign({},r); delete raw.u; Sync.queue("rec",month,r.id,raw,r.u); stopMic(); $("dlgRec").close(); render(); toast("削除しました"); };
+
+// ---- 声で入力（ブラウザの音声認識。使えない端末はキーボードのマイクで）----
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition; let rec=null, recBtn=null;
+function stopMic(){ if(rec){ try{ rec.stop(); }catch(e){} } rec=null; if(recBtn){ recBtn.classList.remove("on"); recBtn.textContent="🎤 声で入力"; } recBtn=null; }
+if(!SR){ ["micHint1","micHint2"].forEach(id=>$(id).textContent="この端末では、キーボードのマイク🎤ボタンで声で入力できます"); }
+document.querySelectorAll("[data-mic]").forEach(b=>b.onclick=()=>{
+  const ta=$(b.dataset.mic);
+  if(!SR){ ta.focus(); toast("キーボードのマイク🎤ボタンを押して話してください"); return; }
+  if(recBtn===b){ stopMic(); return; } stopMic();
+  rec=new SR(); rec.lang="ja-JP"; rec.interimResults=true; rec.continuous=true; recBtn=b; b.classList.add("on"); b.textContent="⏺ 聞いています…（押すと止まる）";
+  const base=ta.value?ta.value.replace(/\s+$/,"")+"　":""; let fin="";
+  rec.onresult=e=>{ let tmp=""; for(let i=e.resultIndex;i<e.results.length;i++){ const t=e.results[i][0].transcript; if(e.results[i].isFinal) fin+=t; else tmp+=t; } ta.value=base+fin+tmp; ta.dispatchEvent(new Event("input")); };
+  rec.onerror=e=>{ toast(e.error==="not-allowed"?"マイクの使用が許可されていません（ブラウザの設定を確認）":"音声入力を止めました（"+e.error+"）"); stopMic(); };
+  rec.onend=()=>{ if(recBtn===b) stopMic(); };
+  try{ rec.start(); }catch(e){ stopMic(); }
+});
+
+// ---- Excel（紙の様式と同じ並び）----
+XS.fonts.push('<font><sz val="9"/><name val="Meiryo UI"/></font>','<font><sz val="10"/><name val="Meiryo UI"/></font>'); // 5:小さい 6:やや小さい
+function buildXlsx(){
+  const S=new Sheet(month.replace("-","年")+"月"); S.landscape=true; S.showGrid=false; S.cols=[7,7,8,9,40,7,7,40,9,9];
+  const H=st({font:1,fill:"head",border:1,h:"center",wrap:true}), B=st({border:1,h:"center"}), T=[st({border:1,wrap:true}),st({font:6,border:1,wrap:true}),st({font:5,border:1,wrap:true})];
+  S.set(0,0,"異常・4M変化点管理表",st({font:3})); S.heights[0]=26;
+  S.merge(0,1,1,1,"鋳造課：",st({})); S.merge(2,1,3,1,month.replace(/^(\d+)-0?(\d+)$/,"$1年 $2月"),st({}));
+  S.merge(4,0,6,1,"<注意事項>\n工程外へ不良品が流出した可能性がある場合は、品管に連絡し品管が判断のこと。\nまた、トライや初品を行った場合は品管が評価を実施すること。",st({border:1,wrap:true})); S.heights[1]=40;
+  S.merge(8,0,9,0,"品管",H); S.set(8,1,"承認",H); S.set(9,1,"確認",H); S.set(8,2,head.approve,B); S.set(9,2,head.confirm,B); S.heights[2]=28;
+  let y=4; const ref=[["","はじめて","変更","久しぶり"],["人","新人教育","部署異動／配置変更","助っ人（応援）／職場復帰"],["設備","設備、工具、治具等の新設","改造／故障(修理)／定期交換","遊休設備再稼働"],["材料","新規の原材料、副資材／過去に例のない不良発生","原材料、副資材の変更","再発不良／半年以上保管"],["方法","初めての製造／検査／管理","製造条件変更／標準作業の変更／トライ","半年以上間隔が空いた作業"]];
+  const R=st({font:5,border:1,h:"center",wrap:true}), RH=st({font:5,fill:"head",border:1,h:"center"});
+  ref.forEach((row,i)=>{ S.set(0,y,row[0],RH); S.merge(1,y,3,y,row[1],i?R:RH); S.merge(4,y,4,y,row[2],i?R:RH); S.merge(5,y,8,y,row[3],i?R:RH); y++; });
+  y++;
+  S.set(0,y,"日付",H); S.set(1,y,"時刻",H); S.set(2,y,"4M区分",H); S.set(3,y,"工程",H); S.set(4,y,"異常・変化点内容",H); S.merge(5,y,7,y,"処置・結果（日時/詳細/評価を記載）",H); S.set(8,y,"確認者",H); S.set(9,y,"品質",H); y++;
+  const ti=t=>{ const n=String(t||"").length; return n>70?2:n>40?1:0; }, lines=t=>Math.max(1,Math.ceil(String(t||"").length/22));
+  live().forEach(r=>{ S.set(0,y,md(r.date),B); S.set(1,y,hm(r.time)||"：",B); S.set(2,y,r.m4,B); S.set(3,y,r.proc,B); S.set(4,y,r.content,T[ti(r.content)]); S.set(5,y,md(r.rdate),B); S.set(6,y,hm(r.rtime)||"：",B); S.set(7,y,r.result,T[ti(r.result)]); S.set(8,y,r.checker,B); S.set(9,y,r.quality,B);
+    const L=Math.max(lines(r.content)*[1,0.8,0.65][ti(r.content)],lines(r.result)*[1,0.8,0.65][ti(r.result)]); S.heights[y]=Math.max(30,Math.round(L*16)+8); y++; });
+  for(let k=0;k<3;k++){ for(let c=0;c<10;c++) S.set(c,y,"",B); S.heights[y]=30; y++; }
+  return workbook([S]); }
+$("btnXlsx").onclick=async()=>{ await Sync.flush(); const blob=buildXlsx(), name=`異常・4M変化点管理表_${month.replace("-","")}.xlsx`;
+  try{ if(window.claude&&window.claude.use){ const dl=await window.claude.use("downloads"); if(dl){ await dl.save({filename:name,data:blob}); toast("保存しました"); return; } } }catch(e){}
+  const u=URL.createObjectURL(blob), a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); toast("保存しました: "+name); };
+
+// ---- 設定 ----
+$("btnSettings").onclick=()=>{ const c=Sync.cfg(); $("cfgUrl").value=c.syncUrl||""; $("cfgToken").value=c.token||""; $("cfgInfo").textContent=""; $("dlgSettings").showModal(); };
+$("btnSetClose").onclick=()=>$("dlgSettings").close();
+$("btnCfgSave").onclick=()=>{ Sync.setCfg($("cfgUrl").value.trim(),$("cfgToken").value.trim()); $("cfgInfo").textContent="保存しました"; Sync.pull(); };
+$("btnCfgTest").onclick=async()=>{ $("cfgInfo").textContent="確認中…"; $("cfgInfo").textContent=await Sync.test(); };
+$("syncStat").onclick=async()=>{ await Sync.flush(); await Sync.pull(); toast("最新の状態です"); };
+
+if(VIEW) $("viewBadge").hidden=false;
+loadLocal(); render(); Sync.status(); Sync.flush().then(Sync.pull);
+})();
+</script>
+</body>
+</html>
