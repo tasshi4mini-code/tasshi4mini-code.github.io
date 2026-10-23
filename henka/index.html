@@ -54,6 +54,10 @@ table{border-collapse:collapse;width:100%}
 .m4b{display:inline-block;padding:1px 8px;border-radius:999px;font-size:13px;font-weight:bold;color:#fff}
 .m4-人{background:#1565c0}.m4-設備{background:#2e7d32}.m4-材料{background:#e65100}.m4-方法{background:#6a1b9a}
 .pend{color:#b00020;font-weight:bold;font-size:13px}
+.qsel{min-height:40px;padding:4px 6px;font-size:15px;width:100%;border:2px solid #8d6e63;background:#fff;font-weight:bold;cursor:pointer}
+.qsel.empty{border-style:dashed;color:#8a93a3;font-weight:normal;background:#fffdf5}
+.list td.qc{padding:4px}
+.qrow{display:flex;gap:8px;align-items:center;margin:4px 0 6px}.qrow .qsel{width:auto;min-width:130px}
 .tblw{overflow-x:auto}
 .cards{display:none}
 .rc{border:1px solid #ddd5d0;border-radius:12px;padding:10px 12px;margin-bottom:10px;cursor:pointer;background:#fff}
@@ -136,7 +140,7 @@ body.view .add,body.view .btns .pri,body.view .btns .del,body.view .mic{display:
       <span class="cnt" id="cnt"></span>
     </div>
     <div class="tblw"><table class="list">
-      <colgroup><col style="width:58px"><col style="width:58px"><col style="width:62px"><col style="width:70px"><col><col style="width:58px"><col style="width:58px"><col><col style="width:70px"><col style="width:70px"></colgroup>
+      <colgroup><col style="width:58px"><col style="width:58px"><col style="width:62px"><col style="width:70px"><col><col style="width:58px"><col style="width:58px"><col><col style="width:70px"><col style="width:100px"></colgroup>
       <thead><tr><th>日付</th><th>時刻</th><th>4M区分</th><th>工程</th><th>異常・変化点内容</th><th colspan="3">処置・結果（日時／詳細／評価）</th><th>確認者</th><th>品質</th></tr></thead>
       <tbody id="tbody"></tbody></table></div>
     <div class="cards" id="cards"></div>
@@ -309,6 +313,9 @@ const Sync=(function(){
 // ---- 表示 ----
 function opts(sel,list,val,blank,add){ const L=list.slice(); if(val&&!L.includes(val)) L.push(val);
   sel.innerHTML=(blank!=null?`<option value="">${blank}</option>`:"")+L.map(v=>`<option ${v===val?"selected":""}>${esc(v)}</option>`).join("")+(add?`<option value="__add">＋ 追加</option>`:""); }
+// 品質は一覧の中のプルダウンで直接えらべる
+function qSel(r){ const L=names.quality.slice(); if(r.quality&&!L.includes(r.quality)) L.push(r.quality);
+  return `<select class="qsel ${r.quality?"":"empty"}" data-q="${r.id}" ${VIEW?"disabled":""}><option value="">－</option>${L.map(v=>`<option ${v===r.quality?"selected":""}>${esc(v)}</option>`).join("")}<option value="__add">＋ 追加</option></select>`; }
 function render(){
   $("month").value=month; $("monLabel").textContent=month.replace(/^(\d+)-0?(\d+)$/,"$1年 $2月");
   opts($("hApprove"),names.quality,head.approve,"－",true); opts($("hConfirm"),names.quality,head.confirm,"－",true);
@@ -316,10 +323,10 @@ function render(){
   const fp=$("fProc").value, fm=$("fM4").value, L=live().filter(r=>(!fp||r.proc===fp)&&(!fm||r.m4===fm));
   $("cnt").textContent=`${L.length}件`+(live().filter(r=>!r.result).length?`（処置まだ ${live().filter(r=>!r.result).length}件）`:"");
   $("tbody").innerHTML=L.length?L.map(r=>`<tr data-id="${r.id}"><td class="dt">${md(r.date)}</td><td>${hm(r.time)||"："}</td><td>${r.m4?`<span class="m4b m4-${esc(r.m4)}">${esc(r.m4)}</span>`:""}</td><td>${esc(r.proc)}</td><td class="tx ${sz(r.content)}">${esc(r.content)}</td>
-    <td class="dt">${md(r.rdate)}</td><td>${hm(r.rtime)||"："}</td><td class="tx ${sz(r.result)}">${r.result?esc(r.result):'<span class="pend">処置まだ</span>'}</td><td>${esc(r.checker)}</td><td>${esc(r.quality)}</td></tr>`).join("")
+    <td class="dt">${md(r.rdate)}</td><td>${hm(r.rtime)||"："}</td><td class="tx ${sz(r.result)}">${r.result?esc(r.result):'<span class="pend">処置まだ</span>'}</td><td>${esc(r.checker)}</td><td class="qc">${qSel(r)}</td></tr>`).join("")
     :`<tr><td colspan="10" class="small" style="padding:16px">この月の記録はまだありません</td></tr>`;
-  $("cards").innerHTML=L.length?L.map(r=>`<div class="rc" data-id="${r.id}"><div class="h"><b>${md(r.date)} ${hm(r.time)}</b>${r.m4?`<span class="m4b m4-${esc(r.m4)}">${esc(r.m4)}</span>`:""}<span>${esc(r.proc)}</span><span style="margin-left:auto">${r.checker?"確認 "+esc(r.checker):""}${r.quality?"・品質 "+esc(r.quality):""}</span></div>
-    <div class="c">${esc(r.content)}</div><div class="r">${r.result?`<b>${md(r.rdate)} ${hm(r.rtime)}</b>　${esc(r.result)}`:'<span class="pend">処置まだ</span>'}</div></div>`).join(""):`<div class="small" style="padding:10px">この月の記録はまだありません</div>`;
+  $("cards").innerHTML=L.length?L.map(r=>`<div class="rc" data-id="${r.id}"><div class="h"><b>${md(r.date)} ${hm(r.time)}</b>${r.m4?`<span class="m4b m4-${esc(r.m4)}">${esc(r.m4)}</span>`:""}<span>${esc(r.proc)}</span><span style="margin-left:auto">${r.checker?"確認 "+esc(r.checker):""}</span></div>
+    <div class="c">${esc(r.content)}</div><div class="qrow"><span class="small">品質</span>${qSel(r)}</div><div class="r">${r.result?`<b>${md(r.rdate)} ${hm(r.rtime)}</b>　${esc(r.result)}`:'<span class="pend">処置まだ</span>'}</div></div>`).join(""):`<div class="small" style="padding:10px">この月の記録はまだありません</div>`;
 }
 function setMonth(m){ Sync.flush(); month=m; loadLocal(); render(); Sync.pull(); }
 const shift=(m,n)=>{ const [y,mm]=m.split("-").map(Number); const d=new Date(y,mm-1+n,1); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); };
@@ -347,8 +354,13 @@ $("rResult").addEventListener("input",()=>{ if($("rResult").value&&!$("rRDate").
 document.querySelectorAll("[data-clr]").forEach(b=>b.onclick=()=>{ $(b.dataset.clr).value=""; });
 document.querySelectorAll("[data-now]").forEach(b=>b.onclick=()=>{ $(b.dataset.now).value=nowHM(); if(b.dataset.now==="rRTime"&&!$("rRDate").value) $("rRDate").value=ymd(new Date()); });
 $("btnAdd").onclick=()=>openRec(null);
-$("tbody").addEventListener("click",e=>{ const tr=e.target.closest("tr[data-id]"); if(tr) openRec(recs.find(r=>r.id===tr.dataset.id)); });
-$("cards").addEventListener("click",e=>{ const c=e.target.closest("[data-id]"); if(c) openRec(recs.find(r=>r.id===c.dataset.id)); });
+function onQ(e){ const sel=e.target.closest("select[data-q]"); if(!sel||VIEW) return; const r=recs.find(x=>x.id===sel.dataset.q); if(!r) return;
+  addFlow(sel,"quality",v=>{ if(v==null){ render(); return; } const top=topRec(month), prev=top?top.quality:"";
+    r.quality=v; r.u=Date.now(); saveLocal(); const raw=Object.assign({},r); delete raw.u; Sync.queue("rec",month,r.id,raw,r.u);
+    if(top&&top.id===r.id&&v) spreadQuality(month,prev); render(); if(!(top&&top.id===r.id)) toast("品質を保存しました"); }); }
+["tbody","cards"].forEach(id=>{ $(id).addEventListener("change",onQ); $(id).addEventListener("click",e=>{ if(e.target.closest("select[data-q]")) e.stopPropagation(); },true); });
+$("tbody").addEventListener("click",e=>{ if(e.target.closest("select[data-q]")) return; const tr=e.target.closest("tr[data-id]"); if(tr) openRec(recs.find(r=>r.id===tr.dataset.id)); });
+$("cards").addEventListener("click",e=>{ if(e.target.closest("select[data-q]")) return; const c=e.target.closest("[data-id]"); if(c) openRec(recs.find(r=>r.id===c.dataset.id)); });
 $("btnCancel").onclick=()=>{ stopMic(); $("dlgRec").close(); };
 // 品質：一番上（いちばん早い）記録に入れた名前を、その月の内容が入っている記録すべてに入れる
 function topRec(mon){ const L=(mon===month?recs:((LS.get(APP+":m:"+mon,null)||{}).recs||[])).filter(r=>!r.del&&r.content).sort((a,b)=>(a.date+(a.time||"99:99")).localeCompare(b.date+(b.time||"99:99"))); return L[0]||null; }
