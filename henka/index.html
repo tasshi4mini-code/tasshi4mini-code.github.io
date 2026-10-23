@@ -65,7 +65,9 @@ table{border-collapse:collapse;width:100%}
 .rc .h b{color:#1d2330;font-size:16px}
 .rc .c{margin:6px 0;font-size:16px;line-height:1.5;word-break:break-all}
 .rc .r{font-size:15px;line-height:1.5;color:#2e3b4e;background:#f5f7fa;border-radius:8px;padding:6px 8px;word-break:break-all}
-dialog{border:none;border-radius:14px;padding:0;max-width:760px;width:calc(100% - 20px);max-height:calc(100dvh - 20px)}
+dialog{border:none;border-radius:14px;padding:0;max-width:760px;width:calc(100% - 20px);max-height:calc(100svh - 20px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+/* 入力画面を開いている間は、うしろの画面を動かさない（スマホで画面がぶれないように） */
+body.lock{position:fixed;left:0;right:0;overflow:hidden}
 dialog::backdrop{background:rgba(0,0,0,.45)}
 .dlg{padding:16px}
 .dlg h3{margin:0 0 10px}
@@ -82,7 +84,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 @keyframes pulse{from{box-shadow:0 0 0 0 rgba(198,40,40,.0)}to{box-shadow:0 0 0 6px rgba(198,40,40,.3)}}
 .mic small{color:#5d6778;font-size:12px}
 .len{font-size:12px;color:#5d6778;text-align:right}
-.btns{display:flex;gap:8px;justify-content:space-between;margin-top:14px;flex-wrap:wrap}
+.btns{display:flex;gap:8px;justify-content:space-between;margin-top:14px;flex-wrap:wrap;position:sticky;bottom:0;background:#fff;padding:10px 0 4px;z-index:2}
 .btns button{min-height:50px;border-radius:10px;padding:0 18px;border:1px solid #b9c2cf;background:#fff;font-weight:bold}
 .btns .pri{background:#6d4c41;color:#fff;border-color:#6d4c41;min-width:140px}
 .btns .del{color:#b00020;border-color:#e5a3a3}
@@ -96,6 +98,8 @@ body.view .add,body.view .btns .pri,body.view .btns .del,body.view .mic{display:
   .tblw{display:none}.cards{display:block}
   .fg{grid-template-columns:1fr 1fr}.fg .w2{grid-column:1/-1}.fg .c2{grid-column:1/-1}
   header h1{font-size:17px;width:100%}
+  dialog{width:100%;max-width:100%;height:100svh;max-height:100svh;margin:0;border-radius:0}
+  .dlg{padding:14px 14px calc(14px + env(safe-area-inset-bottom))}
 }
 </style>
 </head>
@@ -361,6 +365,11 @@ function onQ(e){ const sel=e.target.closest("select[data-q]"); if(!sel||VIEW) re
 ["tbody","cards"].forEach(id=>{ $(id).addEventListener("change",onQ); $(id).addEventListener("click",e=>{ if(e.target.closest("select[data-q]")) e.stopPropagation(); },true); });
 $("tbody").addEventListener("click",e=>{ if(e.target.closest("select[data-q]")) return; const tr=e.target.closest("tr[data-id]"); if(tr) openRec(recs.find(r=>r.id===tr.dataset.id)); });
 $("cards").addEventListener("click",e=>{ if(e.target.closest("select[data-q]")) return; const c=e.target.closest("[data-id]"); if(c) openRec(recs.find(r=>r.id===c.dataset.id)); });
+// 入力画面の開け閉めで、うしろの画面を固定する
+let lockY=0;
+function lockBody(){ if(document.body.classList.contains("lock")) return; lockY=window.scrollY; document.body.style.top=(-lockY)+"px"; document.body.classList.add("lock"); }
+function unlockBody(){ if(!document.body.classList.contains("lock")) return; document.body.classList.remove("lock"); document.body.style.top=""; window.scrollTo(0,lockY); }
+["dlgRec","dlgSettings"].forEach(id=>{ const d=$(id); const so=d.showModal.bind(d); d.showModal=()=>{ lockBody(); so(); d.scrollTop=0; }; d.addEventListener("close",unlockBody); });
 $("btnCancel").onclick=()=>{ stopMic(); $("dlgRec").close(); };
 // 品質：一番上（いちばん早い）記録に入れた名前を、その月の内容が入っている記録すべてに入れる
 function topRec(mon){ const L=(mon===month?recs:((LS.get(APP+":m:"+mon,null)||{}).recs||[])).filter(r=>!r.del&&r.content).sort((a,b)=>(a.date+(a.time||"99:99")).localeCompare(b.date+(b.time||"99:99"))); return L[0]||null; }
