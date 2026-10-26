@@ -65,6 +65,40 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 #lock input{font-size:28px;text-align:center;width:100%;min-height:56px;border:2px solid #90a4ae;border-radius:10px;letter-spacing:6px;margin:12px 0}
 #lock button{width:100%;min-height:52px;border-radius:10px;border:0;background:#263238;color:#fff;font-size:18px;font-weight:bold}
 #lockMsg{color:#b00020;min-height:20px;font-size:14px}
+/* 日報の削除 */
+#delPage{flex:1 1 auto;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+#delPage[hidden]{display:none}
+.dwrap{max-width:900px;margin:0 auto}
+.dwarn{background:#fff3f3;border:2px solid #e57373;border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.7;color:#7f1d1d;margin-bottom:12px}
+.dctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.dctl .seg button{min-height:44px}
+#dlProcs{display:flex;flex-wrap:wrap;max-width:100%}
+#dlProcs button{white-space:nowrap;flex:1 1 auto}
+.mnav{display:inline-flex;align-items:center;gap:6px}
+.mnav button{min-height:44px;min-width:44px;border-radius:10px;border:2px solid #455a64;background:#fff;font-size:18px;font-weight:bold;cursor:pointer}
+.mnav b{font-size:18px;min-width:110px;text-align:center}
+.dlist{background:#fff;border:1px solid #cfd8dc;border-radius:12px;overflow:hidden}
+.dlr{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #eceff1}
+.dlr:last-child{border-bottom:0}
+.dlr .dd{flex:1;min-width:0;font-size:15px;line-height:1.6}
+.dlr .dd b{font-size:17px;margin-right:6px}
+.dlr.empty{background:#fafafa}
+.dbtn{min-height:44px;min-width:76px;border-radius:10px;border:2px solid #c62828;background:#fff;color:#c62828;font-weight:bold;font-size:15px;cursor:pointer}
+.dbtn:active{background:#c62828;color:#fff}
+.dnone{padding:18px;color:#8a93a3;text-align:center}
+#dlg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:90;padding:16px}
+#dlg[hidden]{display:none}
+#dlg .box{background:#fff;border-radius:16px;padding:20px;width:min(440px,100%);max-height:90vh;overflow-y:auto}
+#dlg h3{margin:0 0 8px;color:#b00020;font-size:19px}
+#dlgBody{font-size:15px;line-height:1.7}
+#dlgPin{font-size:24px;text-align:center;width:100%;min-height:52px;border:2px solid #90a4ae;border-radius:10px;letter-spacing:6px;margin:10px 0 4px}
+#dlgMsg{color:#b00020;min-height:20px;font-size:14px}
+.dbtns{display:flex;gap:10px;margin-top:10px}
+.dbtns button{flex:1;min-height:50px;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;border:2px solid #90a4ae;background:#fff}
+.dbtns .go{background:#c62828;border-color:#c62828;color:#fff}
+.dbtns .go:disabled{background:#e0a0a0;border-color:#e0a0a0}
+#toastK{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#263238;color:#fff;padding:12px 20px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none;z-index:99;max-width:90vw}
+#toastK.on{opacity:1}
 @media (max-width:700px){
   header h1{font-size:16px}
   .pb{min-width:84px;min-height:48px;font-size:15px}
@@ -106,6 +140,22 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
   </div>
 </div>
 <div id="frameBox" hidden><iframe id="frame" title="日報"></iframe></div>
+<div id="delPage" hidden><div class="dwrap">
+  <div class="dwarn">⚠ <b>日報の削除</b>：選んだ日報を、スプレッドシートからまるごと消します（入力データ・集計用シートの行・日付のシート）。<b>元に戻せません。</b>消すときは管理者パスワードが必要です。<br>
+  ・試しに入れた日報や、まちがえて作った空の日報を消すときに使ってください。<br>
+  ・消したあとに、その日の日報を開いたままの端末で入力すると、その分はまた送られてきます。</div>
+  <div class="dctl"><div class="seg" id="dlProcs"></div></div>
+  <div class="dctl"><div class="mnav"><button id="dlPrev">◀</button><b id="dlMonth"></b><button id="dlNext">▶</button></div><span class="subt" id="dlCount"></span></div>
+  <div class="dlist" id="dlList"></div>
+</div></div>
+<div id="dlg" hidden><div class="box">
+  <h3>この日報を消しますか？</h3>
+  <div id="dlgBody"></div>
+  <div id="dlgPinBox"><div class="subt" style="margin-top:10px">管理者パスワード</div><input id="dlgPin" type="password" inputmode="numeric" autocomplete="off"></div>
+  <div id="dlgMsg"></div>
+  <div class="dbtns"><button id="dlgNo">やめる</button><button class="go" id="dlgGo">消す</button></div>
+</div></div>
+<div id="toastK"></div>
 
 <script>
 (function(){
@@ -141,11 +191,14 @@ async function checkLock(){ if(LS.get("kanri:ok",0)>Date.now()) return true;
 
 // ---- 画面 ----
 function renderProcs(){ $("procs").innerHTML=`<button class="pb ${st.tab==="home"?"on":""}" data-t="home" style="--c:#263238">ホーム<small>入力状況</small></button>`+
-  PROCS.map(p=>`<button class="pb ${st.tab===p.k?"on":""}" data-t="${p.k}" style="--c:${p.c}">${p.name}<small>${p.id}</small></button>`).join(""); }
+  PROCS.map(p=>`<button class="pb ${st.tab===p.k?"on":""}" data-t="${p.k}" style="--c:${p.c}">${p.name}<small>${p.id}</small></button>`).join("")+
+  `<button class="pb ${st.tab==="del"?"on":""}" data-t="del" style="--c:#c62828">日報の削除<small>管理者</small></button>`; }
 function urlOf(p,mode,eq){ const q=new URLSearchParams(); if(p.eq){ q.set("equip",eq||st.eq[p.k]||p.eq[0]); if(p.date&&st.date!==ymd(new Date())) q.set("date",st.date); }
   let s=q.toString(); if(mode==="view") s+=(s?"&":"")+"view"; return p.path+(s?"?"+s:""); }
 function open(k){ st.tab=k; save(); renderProcs();
+  $("delPage").hidden=true;
   if(k==="home"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=false; $("frame").src="about:blank"; loadStatus(); return; }
+  if(k==="del"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("delPage").hidden=false; delOpen(); return; }
   const p=P[k]; $("home").hidden=true; $("frameBox").hidden=false; $("sub").hidden=false;
   $("mode").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.m===st.mode));
   $("eqSeg").hidden=!p.eq; $("eqSeg").innerHTML=p.eq?p.eq.map(e=>`<button data-e="${esc(e)}" class="${e===st.eq[k]?"on":""}">${esc(e)}</button>`).join(""):"";
@@ -155,9 +208,9 @@ $("procs").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); i
 $("mode").addEventListener("click",e=>{ const b=e.target.closest("[data-m]"); if(!b) return; st.mode=b.dataset.m; save(); open(st.tab); });
 $("eqSeg").addEventListener("click",e=>{ const b=e.target.closest("[data-e]"); if(!b) return; st.eq[st.tab]=b.dataset.e; save(); open(st.tab); });
 $("date").value=st.date;
-$("date").addEventListener("change",()=>{ if(!$("date").value) return; st.date=$("date").value; if(st.tab==="home") loadStatus(); else open(st.tab); });
+$("date").addEventListener("change",()=>{ if(!$("date").value) return; st.date=$("date").value; if(st.tab==="del"){ dl.month=st.date.slice(0,7); loadDel(); return; } if(st.tab==="home") loadStatus(); else open(st.tab); });
 $("btnToday").onclick=()=>{ st.date=ymd(new Date()); $("date").value=st.date; if(st.tab==="home") loadStatus(); else open(st.tab); };
-$("btnReload").onclick=()=>{ if(st.tab==="home") loadStatus(true); else { try{ $("frame").contentWindow.location.reload(); }catch(e){ open(st.tab); } } };
+$("btnReload").onclick=()=>{ if(st.tab==="del"){ loadDel(); return; } if(st.tab==="home") loadStatus(true); else { try{ $("frame").contentWindow.location.reload(); }catch(e){ open(st.tab); } } };
 
 // ---- 入力状況（各工程のスプレッドシートの「日報一覧」を読む） ----
 const fmtT=u=>{ if(!u) return ""; const x=new Date(u); return `${x.getMonth()+1}/${x.getDate()} ${x.getHours()}:${String(x.getMinutes()).padStart(2,"0")}`; };
@@ -192,7 +245,52 @@ $("cards").addEventListener("click",e=>{ const b=e.target.closest("[data-open]")
 setInterval(()=>{ if(st.tab==="home"&&document.visibilityState==="visible") loadStatus(); },60000);
 document.addEventListener("visibilitychange",()=>{ if(st.tab==="home"&&document.visibilityState==="visible") loadStatus(); });
 
-(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||st.tab==="home"?st.tab:"home"); })();
+
+// ---- 日報の削除（各工程の Apps Script に「削除」ファイルが入っていると使える）----
+const DELP=PROCS.filter(p=>p.k!=="henka");
+const dl={k:LS.get("kanri:delk","zokei"), month:st.date.slice(0,7), days:[]};
+const WD="日月火水木金土";
+const dlab=d=>{ const x=new Date(d+"T00:00:00"); return isNaN(x)?d:`${x.getMonth()+1}/${x.getDate()}（${WD[x.getDay()]}）`; };
+function toastK(t){ const b=$("toastK"); b.textContent=t; b.classList.add("on"); clearTimeout(toastK.t); toastK.t=setTimeout(()=>b.classList.remove("on"),3000); }
+async function postTo(p,body){ const c=await cfgOf(p); if(!c||!c.syncUrl) throw new Error("config.js の syncUrl が未設定");
+  const res=await fetch(c.syncUrl,{method:"POST",body:JSON.stringify(Object.assign({token:c.token||""},body)),redirect:"follow"});
+  const j=await res.json(); if(!j.ok) throw new Error(j.error||"error"); return j; }
+function delOpen(){ if(!DELP.some(p=>p.k===dl.k)) dl.k="zokei"; renderDelProcs(); loadDel(); }
+function renderDelProcs(){ $("dlProcs").innerHTML=DELP.map(p=>`<button data-k="${p.k}" class="${p.k===dl.k?"on":""}">${p.name}</button>`).join(""); }
+$("dlProcs").addEventListener("click",e=>{ const b=e.target.closest("[data-k]"); if(!b) return; dl.k=b.dataset.k; LS.set("kanri:delk",dl.k); renderDelProcs(); loadDel(); });
+const shiftM=n=>{ const [y,m]=dl.month.split("-").map(Number), x=new Date(y,m-1+n,1); dl.month=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`; loadDel(); };
+$("dlPrev").onclick=()=>shiftM(-1); $("dlNext").onclick=()=>shiftM(1);
+function badgesOf(p,d){ const b=[`<span class="badge ${d.filled?"b-ok":""}">入力 ${d.filled||0}${p.unit}</span>`];
+  if(d.events) b.push(`<span class="badge b-w">異常/変化点 ${d.events}</span>`);
+  if(d.total) b.push(`<span class="badge">${p.k==="zokei"?"造型 "+d.total+"枠":"総数 "+d.total}</span>`);
+  if(!d.filled&&!d.events) b.push(`<span class="badge">入力なし</span>`); return b.join(" "); }
+let dlSeq=0;
+async function loadDel(){ const my=++dlSeq, p=P[dl.k];
+  $("dlMonth").textContent=dl.month.replace(/^(\d+)-0?(\d+)$/,"$1年$2月"); $("dlCount").textContent=""; $("dlList").innerHTML=`<div class="dnone">読み込み中…</div>`;
+  try{ const L=await listOf(p,dl.month); if(my!==dlSeq) return;
+    dl.days=L.filter(d=>String(d.date||"").slice(0,7)===dl.month).map(d=>Object.assign({},d,{equip:d.equip||(p.k==="yokai"?"溶解":"")}))
+      .sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(a.equip).localeCompare(String(b.equip)));
+    $("dlCount").textContent=`${p.name}日報 ${dl.days.length} 件`;
+    $("dlList").innerHTML=dl.days.length?dl.days.map((d,i)=>`<div class="dlr ${!d.filled&&!d.events?"empty":""}"><div class="dd"><b>${esc(dlab(d.date))}</b>${esc(d.equip&&d.equip!=="溶解"?d.equip:"")}<br>${badgesOf(p,d)}</div><button class="dbtn" data-i="${i}">削除</button></div>`).join("")
+      :`<div class="dnone">この月の${esc(p.name)}日報はありません</div>`; }
+  catch(e){ if(my!==dlSeq) return; $("dlList").innerHTML=`<div class="dnone">⚠ 読み込めませんでした（${esc(e.message||e)}）</div>`; } }
+let dlCur=null;
+function dlgShow(html,canGo){ $("dlgBody").innerHTML=html; $("dlgMsg").textContent=""; $("dlgPin").value=""; $("dlgPinBox").hidden=!canGo; $("dlgGo").hidden=!canGo; $("dlgGo").disabled=false; $("dlg").hidden=false; if(canGo) setTimeout(()=>$("dlgPin").focus(),100); }
+$("dlList").addEventListener("click",async e=>{ const b=e.target.closest("[data-i]"); if(!b) return; const d=dl.days[+b.dataset.i], p=P[dl.k]; if(!d) return;
+  dlCur={p,d}; const title=`<b>${esc(p.name)}日報　${esc(d.date)}${d.equip&&d.equip!=="溶解"?"　"+esc(d.equip):""}</b>`;
+  dlgShow(title+"<br>確認しています…",false);
+  try{ const j=await postTo(p,{action:"deleteDay",check:true,date:d.date,equip:d.equip}); if(dlCur.d!==d) return;
+    if(!j.check){ dlgShow(title+`<br><span style="color:#b00020">この工程の Apps Script に「削除」のファイルがまだ入っていません。<br>「日報の削除_設定手順.txt」のとおりに追加してください。</span>`,false); return; }
+    dlgShow(title+`<br>${badgesOf(p,d)}<br>スプレッドシートの行 <b>${j.rows}</b> 行${j.sheets&&j.sheets.length?`と、シート「${esc(j.sheets.join("、"))}」`:""}を消します。<br><b style="color:#b00020">元に戻せません。</b>`,true); }
+  catch(x){ dlgShow(title+`<br><span style="color:#b00020">確認できませんでした（${esc(x.message||x)}）</span>`,false); } });
+$("dlgNo").onclick=()=>{ $("dlg").hidden=true; dlCur=null; };
+$("dlgPin").addEventListener("keydown",e=>{ if(e.key==="Enter") $("dlgGo").click(); });
+$("dlgGo").onclick=async()=>{ if(!dlCur) return; const pin=$("dlgPin").value.trim(); if(!pin){ $("dlgMsg").textContent="管理者パスワードを入れてください"; return; }
+  const {p,d}=dlCur; $("dlgGo").disabled=true; $("dlgMsg").textContent="消しています…";
+  try{ const j=await postTo(p,{action:"deleteDay",pin,date:d.date,equip:d.equip}); if(!j.deleted) throw new Error("消せませんでした");
+    $("dlg").hidden=true; dlCur=null; toastK(`${p.name}日報 ${d.date} ${d.equip&&d.equip!=="溶解"?d.equip:""} を消しました`); loadDel(); }
+  catch(x){ $("dlgGo").disabled=false; $("dlgMsg").textContent=String(x.message||x); } };
+(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||st.tab==="home"||st.tab==="del"?st.tab:"home"); })();
 })();
 </script>
 </body>
