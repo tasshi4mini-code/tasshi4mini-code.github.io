@@ -95,6 +95,15 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 .cgrp .crow .lv{flex:0 0 auto;font-size:12px;font-weight:bold;padding:1px 8px;border-radius:999px;margin-top:2px}
 .lv.NG{background:#ffd9d9;color:#b00020}.lv.注意{background:#fff1c2;color:#7a5a00}.lv.OK{background:#d8f1e0;color:#1b5e20}.lv.Info{background:#e3f2fd;color:#0d47a1}
 .cgrp .crow .cc{flex:0 0 auto;color:#5d6778;font-size:12px;min-width:90px;margin-top:2px}
+.csup{background:#fff;border:2px solid #2e7d32;border-radius:12px;padding:10px 14px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px}
+.csup .r1{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.csup input{font-size:17px;min-height:44px;border:2px solid #90a4ae;border-radius:8px;padding:0 10px;width:9em;font-weight:bold}
+.csup button{min-height:48px;border-radius:10px;border:0;background:#2e7d32;color:#fff;font-weight:bold;font-size:16px;padding:0 16px;cursor:pointer}
+.csup button.sec{background:#fff;color:#37474f;border:2px solid #90a4ae}
+.csup button:disabled{opacity:.5;cursor:default}
+.csup .done{color:#1b5e20;font-weight:bold}
+.csup .lst{font-size:14px;line-height:1.7}
+.csup .lst span{display:inline-block;margin-right:10px}
 .cnote{font-size:13px;color:#5d6778;line-height:1.7;margin-top:12px}
 /* QR・URL */
 #qrPage{flex:1 1 auto;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
@@ -388,18 +397,18 @@ function renderCheck(){ const box=$("chk"), d=chkData; if(!d){ box.hidden=true; 
   box.className="chk"+(ng?" ng":(wn?" warn":""));
   const md=s=>s.replace(/^(\d+)-0?(\d+)-0?(\d+)$/,"$2/$3"), at=d.at?new Date(d.at):null;
   box.innerHTML=`<div class="ct"><b>日報の整合性チェック（${esc(md(d.date))}の分）</b>`+
-    (ng?`<span class="badge b-ng">要確認 ${ng}件</span>`:`<span class="badge b-ok">要確認 0件</span>`)+(wn?`<span class="badge b-w">注意 ${wn}件</span>`:"")+
+    (ng?`<span class="badge b-ng">要確認 ${ng}件</span>`:`<span class="badge b-ok">要確認 0件</span>`)+(wn?`<span class="badge b-w">注意 ${wn}件</span>`:"")+(d.confirmed?`<span class="badge b-ok">✔ ${esc(d.confirmed.by)} 確認ずみ</span>`:`<span class="badge">監督者の確認まだ</span>`)+
     `<span class="subt">${at?`${at.getMonth()+1}/${at.getDate()} ${at.getHours()}:${String(at.getMinutes()).padStart(2,"0")} 作成`:""}　Excel：鋳造課日報データ\\整合性チェック</span></div>`+
     (shown.length?`<ul>${shown.map(x=>`<li><span class="lv ${esc(x.lv)}">${x.lv==="NG"?"要確認":esc(x.lv)}</span><span class="cp">${esc(x.cat)}／${esc(x.proc)}</span><span>${esc(x.msg)}</span></li>`).join("")}</ul>`:`<div class="subt" style="margin-top:6px">問題は見つかりませんでした</div>`)+
-    `<button class="more" id="chkTab">整合性チェックの画面で見る（日付・工程で絞りこみ）→</button>`;
+    `<button class="more" id="chkTab">${d.confirmed?"":"確認して監督者欄に入れる／"}整合性チェックの画面で見る →</button>`;
   const b=$("chkTab"); if(b) b.onclick=()=>{ ck.month=(d.date||st.date).slice(0,7); ck.day=d.date||null; open("chk"); }; }
 // ---- 整合性チェック（タブ）：月ごとに日付を並べて、選んだ日の結果を工程ごとに出す ----
-const ck={month:null,day:null,lv:"bad",proc:"all",cache:{}};
+const ck={month:null,day:null,lv:"bad",proc:"all",cache:{},sup:{}};
 async function ckGet(m,force){ const o=ck.cache[m]; if(!force&&o&&Date.now()-o.at<60*1000) return o.list;
   const c=await cfgOf(P.henka); if(!c||!c.syncUrl) throw new Error("4M変化点の設定がありません");
   const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:m,equip:"check"});
   const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error");
-  const list=(j.items||[]).filter(x=>x.type==="check"&&x.raw).map(x=>Object.assign({date:x.ref},x.raw,{date:x.raw.date||x.ref})).sort((a,b)=>b.date.localeCompare(a.date));
+  const list=(j.items||[]).filter(x=>x.type==="check"&&x.raw).map(x=>Object.assign({date:x.ref},x.raw,{date:x.raw.date||x.ref,_raw:x.raw})).sort((a,b)=>b.date.localeCompare(a.date));
   ck.cache[m]={at:Date.now(),list}; return list; }
 function ckOpen(){ if(!ck.month) ck.month=st.date.slice(0,7); ckLoad(); }
 async function ckLoad(){ const m=ck.month; $("ckMonth").textContent=m.replace(/^(\d+)-0?(\d+)$/,"$1年$2月"); $("ckInfo").textContent="読み込み中…";
@@ -409,7 +418,7 @@ async function ckLoad(){ const m=ck.month; $("ckMonth").textContent=m.replace(/^
   catch(e){ $("ckInfo").textContent="読み込めませんでした（"+(e.message||e)+"）"; $("ckDays").innerHTML=""; $("ckBody").innerHTML=""; } }
 function ckRender(){ const L=ck.list||[], dmd=s=>s.replace(/^(\d+)-0?(\d+)-0?(\d+)$/,"$2/$3"), wd=s=>"日月火水木金土"[new Date(s+"T00:00:00").getDay()];
   $("ckDays").innerHTML=L.slice().reverse().map(x=>{ const ng=x.ng||0, w=x.warn||0, cls=ng?"ng":(w?"w":"ok");
-    return `<button data-d="${esc(x.date)}" class="${cls} ${x.date===ck.day?"on":""}">${esc(dmd(x.date))}(${wd(x.date)})<small>${ng||w?[ng?`要確認${ng}`:"",w?`注意${w}`:""].filter(Boolean).join(" "):"OK"}</small></button>`; }).join("");
+    return `<button data-d="${esc(x.date)}" class="${cls} ${x.date===ck.day?"on":""}">${x.confirmed?"✔ ":""}${esc(dmd(x.date))}(${wd(x.date)})<small>${ng||w?[ng?`要確認${ng}`:"",w?`注意${w}`:""].filter(Boolean).join(" "):"OK"}</small></button>`; }).join("");
   const d=L.find(x=>x.date===ck.day); const body=$("ckBody");
   if(!d){ $("ckLv").innerHTML=""; $("ckProc").innerHTML=""; body.innerHTML=`<div class="subt">結果がありません</div>`; return; }
   const items=d.items||[], isBad=x=>x.lv==="NG"||x.lv==="注意";
@@ -423,11 +432,53 @@ function ckRender(){ const L=ck.list||[], dmd=s=>s.replace(/^(\d+)-0?(\d+)-0?(\d
   let h=`<div class="ct" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><b style="font-size:18px">${esc(dmd(d.date))}（${wd(d.date)}）の日報</b>`+
     `<span class="badge ${d.ng?"b-ng":"b-ok"}">要確認 ${d.ng||0}件</span>${d.warn?`<span class="badge b-w">注意 ${d.warn}件</span>`:""}`+
     `<span class="subt">${at?`${at.getMonth()+1}/${at.getDate()} ${at.getHours()}:${String(at.getMinutes()).padStart(2,"0")} チェック`:""}</span></div>`;
+  h+=`<div class="csup" id="ckSup"></div>`;
   if(!f.length) h+=`<div class="cgrp"><div class="crow">${ck.lv==="all"?"項目がありません":"この条件の問題は見つかりませんでした ✓"}</div></div>`;
   const ord={NG:0,"注意":1,Info:2,OK:3};
   [...new Set(f.map(x=>x.proc||"その他"))].forEach(p=>{ const g=f.filter(x=>(x.proc||"その他")===p).sort((a,b)=>(ord[a.lv]??9)-(ord[b.lv]??9));
     h+=`<div class="cgrp"><h3>${esc(p)}<span class="badge">${g.length}件</span></h3>`+g.map(x=>`<div class="crow"><span class="lv ${esc(x.lv)}">${x.lv==="NG"?"要確認":esc(x.lv)}</span><span class="cc">${esc(x.cat||"")}</span><span>${esc(x.msg||"")}</span></div>`).join("")+`</div>`; });
-  body.innerHTML=h; }
+  body.innerHTML=h; supRender(d); }
+// ---- 監督者の確認：チェックを見たあとにボタンを押すと、その日の全工程の日報の「記録確認（監督者）」欄に名前が入る ----
+const SUP_PROCS=["suna","yokai","zokei","chuto","kensa","shot"], SUP_FIELD={chuto:"recordCheck"};
+const supName=()=>String(LS.get("kanri:sup","田代皓")||"").trim();
+async function apiGet(c,params){ const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams(Object.assign({token:c.token||""},params)); const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); return j; }
+async function apiPost(c,ops){ const j=await (await fetch(c.syncUrl,{method:"POST",body:JSON.stringify({token:c.token||"",ops}),redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); return j; }
+// その日の各工程の日報と、いまの監督者欄を読む
+async function supScan(date){ const out=[];
+  await Promise.all(SUP_PROCS.map(async k=>{ const p=P[k]; try{ const c=await cfgOf(p); if(!c||!c.syncUrl) throw new Error("設定なし");
+      const days=(await listOf(p,date.slice(0,7))).filter(d=>d.date===date);
+      for(const d of days){ const j=await apiGet(c,{action:"load",date,equip:d.equip||""}); const f=SUP_FIELD[k]||"confirmBy";
+        let head;
+        if(k==="suna"){ const h=j.header||{}; head={batch:h.batch??"",sandRemain:h.sandRemain??"",confirmBy:h.confirmBy??""}; }
+        else { const it=(j.items||[]).find(x=>x.type==="header"); head=Object.assign({},(it&&it.raw)||{}); }
+        out.push({k,p,c,equip:d.equip||"",f,head,cur:String(head[f]??"").trim()}); } }
+    catch(e){ out.push({k,p,err:String(e.message||e)}); } }));
+  out.sort((a,b)=>SUP_PROCS.indexOf(a.k)-SUP_PROCS.indexOf(b.k)||String(a.equip).localeCompare(String(b.equip))); return out; }
+const supLabel=x=>x.p.name+(x.equip&&x.equip!=="溶解"&&x.equip!==x.p.name?"（"+x.equip+"）":"");
+async function supRender(d,force){ const box=$("ckSup"); if(!box) return; const date=d.date, name=supName();
+  const cf=d.confirmed; let s=ck.sup[date];
+  box.innerHTML=`<div class="r1"><b>監督者の確認</b><span class="subt">名前</span><input id="supName" value="${esc(name)}">`+
+    `<button id="supGo" disabled>✔ 確認しました（全工程の監督者欄に入れる）</button>`+
+    (cf?`<span class="done">✔ ${esc(cf.by)} 確認ずみ（${new Date(cf.at).getMonth()+1}/${new Date(cf.at).getDate()} ${new Date(cf.at).getHours()}:${String(new Date(cf.at).getMinutes()).padStart(2,"0")}）</span>`:"")+`</div><div class="lst" id="supLst">日報を読み込んでいます…</div>`;
+  $("supName").onchange=e=>{ LS.set("kanri:sup",e.target.value.trim()); supRender(d); };
+  try{ if(!s||force||Date.now()-s.at>60*1000){ s=ck.sup[date]={at:Date.now(),list:await supScan(date)}; } if(!$("supLst")||ck.day!==date) return;
+    const L=s.list, ok=L.filter(x=>!x.err), todo=ok.filter(x=>x.cur!==name);
+    $("supLst").innerHTML=(ok.length?`この日の日報 ${ok.length}件：`+ok.map(x=>`<span>${x.cur===name?"✔":"□"} ${esc(supLabel(x))}${x.cur&&x.cur!==name?`（いま「${esc(x.cur)}」）`:""}</span>`).join(""):"この日の日報はまだありません")+
+      L.filter(x=>x.err).map(x=>`<br><span style="color:#b00020">⚠ ${esc(x.p.name)}：読み込めませんでした（${esc(x.err)}）</span>`).join("");
+    const b=$("supGo"); b.disabled=!name||!todo.length; if(ok.length&&!todo.length) b.textContent="✔ 全工程の監督者欄に入っています";
+    b.onclick=()=>supDo(d,todo,name); }
+  catch(e){ if($("supLst")) $("supLst").innerHTML=`<span style="color:#b00020">読み込めませんでした（${esc(e.message||e)}）</span>`; } }
+async function supDo(d,todo,name){ const b=$("supGo"); b.disabled=true; b.textContent="入れています…"; const now=Date.now(), errs=[];
+  for(const x of todo){ try{ const date=d.date, e=x.equip;
+      const op=x.k==="suna"?{type:"header",date,equip:e,u:now,batch:x.head.batch,sandRemain:x.head.sandRemain,confirmBy:name}
+        :{type:"header",date,equip:e,ref:"",u:now,raw:Object.assign({},x.head,{[x.f]:name})};
+      await apiPost(x.c,[op]); }
+    catch(er){ errs.push(supLabel(x)+"："+(er.message||er)); } }
+  // 確認したことを整合性チェックの結果に残す（日付のボタンに ✔）
+  if(!errs.length){ try{ const c=await cfgOf(P.henka); const raw=Object.assign({},d._raw||{},{confirmed:{by:name,at:now}});
+      await apiPost(c,[{type:"check",date:d.date.slice(0,7),equip:"check",ref:d.date,u:now,raw}]); d.confirmed=raw.confirmed; d._raw=raw; }catch(er){} }
+  ck.sup[d.date]=null; toastK(errs.length?"⚠ 入れられなかった日報があります":`✔ ${todo.length}件の日報の監督者欄に「${name}」を入れました`);
+  ckRender(); if(errs.length&&$("supLst")) $("supLst").innerHTML+=errs.map(t=>`<br><span style="color:#b00020">⚠ ${esc(t)}</span>`).join(""); }
 $("ckDays").addEventListener("click",e=>{ const b=e.target.closest("[data-d]"); if(!b) return; ck.day=b.dataset.d; ckRender(); });
 $("ckLv").addEventListener("click",e=>{ const b=e.target.closest("[data-lv]"); if(!b) return; ck.lv=b.dataset.lv; ckRender(); });
 $("ckProc").addEventListener("click",e=>{ const b=e.target.closest("[data-pr]"); if(!b) return; ck.proc=b.dataset.pr; ckRender(); });
