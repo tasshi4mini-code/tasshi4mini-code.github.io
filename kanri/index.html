@@ -76,6 +76,48 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 .chk li .lv.NG{background:#ffd9d9;color:#b00020}.chk li .lv.注意{background:#fff1c2;color:#7a5a00}.chk li .lv.OK{background:#d8f1e0;color:#1b5e20}
 .chk li .cp{flex:0 0 auto;color:#5d6778;font-size:12px;min-width:120px}
 .chk .more{margin-top:6px;min-height:40px;border-radius:8px;border:1px solid #90a4ae;background:#fff;font-weight:bold;cursor:pointer;padding:0 12px}
+/* 月次実績（ロイヤルブルー基調） */
+#monPage{flex:1 1 auto;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;font-family:"Meiryo","メイリオ",sans-serif}
+#monPage[hidden]{display:none}
+.mwrap{max-width:1200px;margin:0 auto}
+.mrhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;background:#fff;border-top:6px solid #4169e1;border-radius:12px;padding:12px 16px;margin-bottom:12px}
+@media (max-width:600px){.mrt{font-size:12px}.mrt th,.mrt td{padding:4px 5px}.mrtitle{font-size:18px!important}.mrlogo{height:40px}}
+.mrtitle{font-size:22px;font-weight:bold;color:#1a3a9c}
+.mrlogo{height:56px;width:auto}
+.mrwait{background:#fff;border-radius:12px;padding:24px;text-align:center;font-size:16px}
+.mrbar{height:10px;background:#e3e9fb;border-radius:999px;margin:10px auto;max-width:420px;overflow:hidden}.mrbar i{display:block;height:100%;background:#4169e1}
+.mrerr{background:#fff3f3;border:1px solid #e57373;border-radius:10px;padding:8px 12px;font-size:13px;color:#7f1d1d;margin-bottom:10px}
+.mtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.mtile{background:#fff;border:1px solid #c5d1f3;border-radius:12px;padding:10px 12px}
+.mtile .ml1{font-size:13px;color:#1a3a9c;font-weight:bold}.mtile .mv{font-size:28px;font-weight:bold;color:#1c2333;line-height:1.3}.mtile .mv small{font-size:14px;margin-left:3px;color:#5d6778}.mtile .ml2{font-size:12px;color:#5d6778}
+.mrsec{background:#fff;border:1px solid #c5d1f3;border-radius:12px;padding:12px 14px;margin-bottom:12px;break-inside:avoid;overflow-x:auto}
+.mrsec h3{margin:0 0 10px;font-size:18px;color:#fff;background:#4169e1;border-radius:8px;padding:6px 12px}
+.mrg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px}
+.mrg2>div{min-width:0;overflow-x:auto}
+.mrt{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px}
+.mrt th{background:#e3e9fb;color:#1a3a9c;font-weight:bold;padding:6px 8px;border:1px solid #c5d1f3;text-align:center;white-space:nowrap}
+.mrt td{padding:5px 8px;border:1px solid #dde3f3;text-align:right;font-variant-numeric:tabular-nums}
+.mrt td:first-child{text-align:left}.mrt tr.tot td{font-weight:bold;background:#f3f6fd}
+.mrev td{text-align:left;font-size:13px}
+.mrscroll{overflow-x:auto}.mrday td{white-space:nowrap}
+.mrhb{height:6px;background:#e3e9fb;border-radius:999px;margin-top:3px;overflow:hidden}.mrhb i{display:block;height:100%;background:#4169e1;border-radius:999px}
+.mrcap{font-size:13px;font-weight:bold;color:#1a3a9c;margin:10px 0 2px}
+.mchart{width:100%;height:auto;display:block}
+.mchart .mg{stroke:#e3e7ef;stroke-width:1}.mchart .mt{font-size:11px;fill:#5d6778}
+.mchart .ml{fill:none;stroke:#4169e1;stroke-width:2;stroke-linejoin:round}.mchart .mp{fill:#4169e1;stroke:#fff;stroke-width:2}
+.mchart .mb{fill:#4169e1}.mchart .mh:hover .mb{fill:#2a4fc4}.mchart .mh:hover .mp{r:6}
+.mchart .mref{stroke:#5d6778;stroke-width:1;stroke-dasharray:4 4}
+.mrctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.mrctl button.mb2{min-height:44px;border-radius:10px;border:2px solid #4169e1;background:#fff;color:#4169e1;font-weight:bold;font-size:15px;padding:0 14px;cursor:pointer}
+.mrctl button.mb2.pri{background:#4169e1;color:#fff}
+@media print{
+  body.pmon #qrPage{display:none!important}
+  body.pmon #monPage{display:block!important;overflow:visible;padding:0}
+  body.pmon .mrctl{display:none!important}
+  body.pmon .mrsec,body.pmon .mtile,body.pmon .mrhead{border-color:#9db0e8}
+  body.pmon .mrsec h3{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body.pmon .mrt th,body.pmon .mrbar i,body.pmon .mchart{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 /* 整合性チェック（タブ） */
 #chkPage{flex:1 1 auto;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
 #chkPage[hidden]{display:none}
@@ -128,7 +170,7 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 .qc .qb{display:flex;gap:6px;width:100%}
 .qc .qb button,.qc .qb a{flex:1;min-height:40px;border-radius:8px;border:1px solid #90a4ae;background:#fff;font-size:13px;font-weight:bold;cursor:pointer;color:#263238;text-decoration:none;display:flex;align-items:center;justify-content:center}
 @media print{
-  header,nav.procs,.sub,#home,#frameBox,#delPage,#chkPage,.qbar,.qc .qb,#toastK{display:none!important}
+  header,nav.procs,.sub,#home,#frameBox,#delPage,#chkPage,body:not(.pmon) #monPage,.qbar,.qc .qb,#toastK{display:none!important}
   body{height:auto;overflow:visible;display:block;background:#fff}
   #qrPage{overflow:visible;padding:0}
   .qgrid{grid-template-columns:repeat(3,1fr);gap:8px}
@@ -213,6 +255,12 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
   </div>
 </div>
 <div id="frameBox" hidden><iframe id="frame" title="日報"></iframe></div>
+<div id="monPage" hidden><div class="mwrap">
+  <div class="mrctl"><div class="mnav"><button id="mrPrev">◀</button><b id="mrMonth"></b><button id="mrNext">▶</button></div>
+    <button class="mb2" id="mrReload">読み直す</button><button class="mb2 pri" id="mrPrint">🖨 印刷する</button>
+    <span class="subt">各工程の日報から1ヶ月分を集計します。点や棒にカーソルを合わせる（タップする）と値が出ます。</span></div>
+  <div id="mrBody"></div>
+</div></div>
 <div id="chkPage" hidden><div class="cwrap">
   <div class="dctl"><div class="mnav"><button id="ckPrev">◀</button><b id="ckMonth"></b><button id="ckNext">▶</button></div><span class="subt" id="ckInfo"></span></div>
   <div class="cdays" id="ckDays"></div>
@@ -279,13 +327,15 @@ async function checkLock(){ if(LS.get("kanri:ok",0)>Date.now()) return true;
 // ---- 画面 ----
 function renderProcs(){ $("procs").innerHTML=`<button class="pb ${st.tab==="home"?"on":""}" data-t="home" style="--c:#263238">ホーム<small>入力状況</small></button>`+
   PROCS.map(p=>`<button class="pb ${st.tab===p.k?"on":""}" data-t="${p.k}" style="--c:${p.c}">${p.name}<small>${p.id}</small></button>`).join("")+
+  `<button class="pb ${st.tab==="mon"?"on":""}" data-t="mon" style="--c:#4169e1">月次実績<small>1ヶ月のまとめ</small></button>`+
   `<button class="pb ${st.tab==="chk"?"on":""}" data-t="chk" style="--c:#2e7d32">整合性チェック<small>毎朝の確認</small></button>`+
   `<button class="pb ${st.tab==="qr"?"on":""}" data-t="qr" style="--c:#1565c0">QR・URL<small>配布用</small></button>`+
   `<button class="pb ${st.tab==="del"?"on":""}" data-t="del" style="--c:#c62828">日報の削除<small>管理者</small></button>`; }
 function urlOf(p,mode,eq){ const q=new URLSearchParams(); if(p.eq){ q.set("equip",eq||st.eq[p.k]||p.eq[0]); if(p.date&&st.date!==ymd(new Date())) q.set("date",st.date); }
   let s=q.toString(); if(mode==="view") s+=(s?"&":"")+"view"; return p.path+(s?"?"+s:""); }
 function open(k){ st.tab=k; save(); renderProcs();
-  $("delPage").hidden=true; $("qrPage").hidden=true; $("chkPage").hidden=true;
+  $("delPage").hidden=true; $("qrPage").hidden=true; $("chkPage").hidden=true; $("monPage").hidden=true;
+  if(k==="mon"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("monPage").hidden=false; mrOpen(); return; }
   if(k==="chk"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("chkPage").hidden=false; ckOpen(); return; }
   if(k==="qr"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("qrPage").hidden=false; renderQR(); return; }
   if(k==="home"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=false; $("frame").src="about:blank"; loadStatus(); return; }
@@ -299,9 +349,9 @@ $("procs").addEventListener("click",e=>{ const b=e.target.closest("[data-t]"); i
 $("mode").addEventListener("click",e=>{ const b=e.target.closest("[data-m]"); if(!b) return; st.mode=b.dataset.m; save(); open(st.tab); });
 $("eqSeg").addEventListener("click",e=>{ const b=e.target.closest("[data-e]"); if(!b) return; st.eq[st.tab]=b.dataset.e; save(); open(st.tab); });
 $("date").value=st.date;
-$("date").addEventListener("change",()=>{ if(!$("date").value) return; st.date=$("date").value; if(st.tab==="del"){ dl.month=st.date.slice(0,7); loadDel(); return; } if(st.tab==="chk"){ ck.month=st.date.slice(0,7); ck.day=null; ckLoad(); return; } if(st.tab==="home") loadStatus(); else open(st.tab); });
-$("btnToday").onclick=()=>{ st.date=ymd(new Date()); $("date").value=st.date; if(st.tab==="chk"){ ck.month=st.date.slice(0,7); ck.day=null; ckLoad(); return; } if(st.tab==="home") loadStatus(); else open(st.tab); };
-$("btnReload").onclick=()=>{ if(st.tab==="del"){ loadDel(); return; } if(st.tab==="chk"){ ck.cache={}; ckLoad(); return; } if(st.tab==="home") loadStatus(true); else { try{ $("frame").contentWindow.location.reload(); }catch(e){ open(st.tab); } } };
+$("date").addEventListener("change",()=>{ if(!$("date").value) return; st.date=$("date").value; if(st.tab==="del"){ dl.month=st.date.slice(0,7); loadDel(); return; } if(st.tab==="chk"){ ck.month=st.date.slice(0,7); ck.day=null; ckLoad(); return; } if(st.tab==="mon"){ const m=st.date.slice(0,7); if(m!==MR.month){ MR.month=m; MR.data=null; mrLoad(); } return; } if(st.tab==="home") loadStatus(); else open(st.tab); });
+$("btnToday").onclick=()=>{ st.date=ymd(new Date()); $("date").value=st.date; if(st.tab==="chk"){ ck.month=st.date.slice(0,7); ck.day=null; ckLoad(); return; } if(st.tab==="mon"){ const m=st.date.slice(0,7); if(m!==MR.month){ MR.month=m; MR.data=null; mrLoad(); } return; } if(st.tab==="home") loadStatus(); else open(st.tab); };
+$("btnReload").onclick=()=>{ if(st.tab==="del"){ loadDel(); return; } if(st.tab==="chk"){ ck.cache={}; ckLoad(); return; } if(st.tab==="mon"){ MR.data=null; mrLoad(true); return; } if(st.tab==="home") loadStatus(true); else { try{ $("frame").contentWindow.location.reload(); }catch(e){ open(st.tab); } } };
 
 // ---- 入力状況（各工程のスプレッドシートの「日報一覧」を読む） ----
 const fmtT=u=>{ if(!u) return ""; const x=new Date(u); return `${x.getMonth()+1}/${x.getDate()} ${x.getHours()}:${String(x.getMinutes()).padStart(2,"0")}`; };
@@ -402,6 +452,217 @@ function renderCheck(){ const box=$("chk"), d=chkData; if(!d){ box.hidden=true; 
     (shown.length?`<ul>${shown.map(x=>`<li><span class="lv ${esc(x.lv)}">${x.lv==="NG"?"要確認":esc(x.lv)}</span><span class="cp">${esc(x.cat)}／${esc(x.proc)}</span><span>${esc(x.msg)}</span></li>`).join("")}</ul>`:`<div class="subt" style="margin-top:6px">問題は見つかりませんでした</div>`)+
     `<button class="more" id="chkTab">${d.confirmed?"":"確認して監督者欄に入れる／"}整合性チェックの画面で見る →</button>`;
   const b=$("chkTab"); if(b) b.onclick=()=>{ ck.month=(d.date||st.date).slice(0,7); ck.day=d.date||null; open("chk"); }; }
+const MR_LOGO="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";
+// ---- 月次実績：各工程の1ヶ月の実績をまとめる（各工程のスプレッドシートから読む。読んだ日報はこの端末に覚えて次から速く）----
+const MR={month:null,busy:false,data:null};
+const MR_MAT={FC200:"FC200",FC250:"FC250",otherH:"その他H",otherL:"その他L",other:"その他","その他SiL":"その他SiL","1204":"1204"};
+const MR_DEF=[["kake","カケ"],["ware","割れ"],["dakon","ダゴン"],["yuzakai","湯境"],["suna","砂カミ"],["hike","ヒケ"],["hari","張り気"],["oshi","押し込み"],["yaki","焼き付き"],["ikobu","鋳コブ/バリ"],["ire","入れ干し"],["shima","島落ち"],["kata","型ズレ"]];
+const MR_SUNA={moist:{min:3.0,max:4.0,tmin:3.1,tmax:3.5},cb:{min:30,max:40,tmin:33,tmax:37},hard:{min:13,max:21,tmin:17,tmax:19}};   // 砂処理日報の規格（初期値）
+const MR_MIX=[["sen","銑鉄"],["kou","新断バラ（鋼鉄）"],["dar","ダライ粉"],["mod","戻り材"],["kat","加炭材"],["sil","シリコン"],["addSc","スクラップ追加"]];
+const mrNum=v=>{ if(v===""||v==null) return null; const n=parseFloat(String(v).replace(/[，,]/g,".").replace(/[０-９．]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))); return isNaN(n)?null:n; };
+const mrMin=hm=>{ const m=/^(\d{1,2}):(\d{2})/.exec(hm||""); return m?(+m[1])*60+(+m[2]):null; };
+function mrEvents(list,date,proc){ return (list||[]).filter(e=>e&&!e.del&&(e.content||e.action)).map(e=>({d:date,p:proc,t:e.start||e.time||"",c:String(e.content||""),a:String(e.action||""),w:String(e.person||"")})); }
+const mrItemsEv=j=>(j.items||[]).filter(it=>it.type==="event").map(it=>it.raw||{});
+const MR_SUM={
+  yokai(j,d){ const ch=[]; let kp=null; (j.items||[]).filter(it=>it.type==="row").sort((a,b)=>(+a.ref)-(+b.ref)).forEach(it=>{ const r=it.raw||{};
+      const kv=mrNum(r.kwh); let ku=null; if(kv!=null){ ku=(kp==null||kv<kp)?kv:kv-kp; kp=kv; }   // 電力量：朝一リセット後の積算値の差
+      if(!r.tap) return;
+      const mix={}; MR_MIX.forEach(([k])=>{ const v=mrNum(r[k]); if(v!=null) mix[k]=v; }); const kg=Object.values(mix).reduce((a,b)=>a+b,0);
+      let mn=null; const a=mrMin(r.st), b=mrMin(r.tap); if(a!=null&&b!=null){ mn=b-a; if(mn<0) mn+=1440; if(mn<10||mn>300) mn=null; }
+      ch.push({mat:MR_MAT[r.mat]||r.mat||"不明",mk:r.mat||"",mn,kg,temp:mrNum(r.temp),kwh:ku,c:mrNum(r.c),si:mrNum(r.si),ce:mrNum(r.ce),dl:r.delay||"",jm:r.jm?(r.judge||""):"",mix}); });
+    return {ch,ev:mrEvents(mrItemsEv(j),d,"溶解")}; },
+  suna(j,d){ const s={moist:[0,0],cb:[0,0],h:[0,0],temp:[0,0],humid:[0,0]}; let n=0; const ng={moist:0,cb:0,hard:0}, wn={moist:0,cb:0,hard:0}, nr={moist:0,cb:0,hard:0};
+    (j.rows||[]).forEach(x=>{ const r=x.raw||{}; if(r.off) return; let any=false;
+      [["moist",[r.moist]],["cb",[r.cb]],["hard",[r.h1n,r.h1s,r.h2n,r.h2s]]].forEach(([k,vs])=>{ const sp=MR_SUNA[k]; let g=false,w=false,has=false;
+        vs.forEach(v=>{ const n=mrNum(v); if(n==null) return; has=true; if(n<sp.min||n>sp.max) g=true; else if(n<sp.tmin||n>sp.tmax) w=true; }); if(has){ nr[k]++; if(g) ng[k]++; else if(w) wn[k]++; } });
+      ["moist","cb","temp","humid"].forEach(k=>{ const v=mrNum(r[k]); if(v!=null){ s[k][0]+=v; s[k][1]++; any=true; } });
+      const hs=["h1n","h1s","h2n","h2s"].map(k=>mrNum(r[k])).filter(v=>v!=null); if(hs.length){ s.h[0]+=hs.reduce((a,b)=>a+b,0)/hs.length; s.h[1]++; any=true; } if(any) n++; });
+    return {n,s,ng,wn,nr,batch:mrNum((j.header||{}).batch),ev:mrEvents(j.events,d,"砂処理")}; },
+  zokei(j,d){ let fr=0,q=0,kg=0,un=0,mins=0,frT=0; const hin={}; const hd=(j.items||[]).find(it=>it.type==="header"), cnt=mrNum(((hd&&hd.raw)||{}).counter);
+    (j.items||[]).forEach(it=>{ if(it.type!=="row") return; const r=it.raw||{}; const its=(r.items||[]).filter(Boolean); if(!its.some(v=>v.hin)) return;
+      fr+=mrNum(r.total)||0; un+=mrNum(r.unp)||0;
+      { const a=mrMin(r.st), b=mrMin(r.en), t=mrNum(r.total); if(a!=null&&b!=null&&t){ let m=b-a; if(m<0) m+=1440; if(m>0&&m<=16*60){ mins+=m; frT+=t; } } }
+      its.forEach((v,k)=>{ if(!v.hin||v.test) return; const qq=mrNum((r.qtyOut||[])[k])||0, w=mrNum((r.wOut||[])[k])||0; q+=qq; kg+=w;
+        const h=hin[v.hin]||(hin[v.hin]={n:v.name||"",q:0,kg:0}); h.q+=qq; h.kg+=w; }); });
+    return {fr,q,kg,un,mins,frT,cnt,hin,ev:mrEvents(mrItemsEv(j),d,"造型")}; },
+  chuto(j,d){ let ch=0,n=0,ng=0,ts=0,tc=0; const rw=[];
+    (j.items||[]).filter(it=>it.type==="block").sort((a,b)=>(+a.ref)-(+b.ref)).forEach(it=>{ const bm=(it.raw||{}).mat||""; const rows=((it.raw||{}).rows||[]).filter(r=>r&&r.time); if(!rows.length) return; ch++;
+      rows.forEach(r=>{ n++; const f=r.rrjudge||r.rejudge||r.judge||""; const g=f==="×"; if(g) ng++; const t=mrNum(r.temp); if(t!=null){ ts+=t; tc++; }
+        rw.push([MR_MAT[r.mat||bm]||r.mat||bm||"不明",mrMin(r.time),g?1:0,ch===1?1:0]); }); });
+    return {ch,n,ng,ts,tc,rw,ev:mrEvents(mrItemsEv(j),d,"注湯")}; },
+  kensa(j,d){ let tot=0,ng=0; const df={}, hin={};
+    (j.items||[]).forEach(it=>{ if(it.type!=="row") return; const r=it.raw||{}; if(!r.hin||r.contFrom) return; const t=mrNum(r.total)||0; let n=0;
+      MR_DEF.forEach(([k])=>{ const v=mrNum((r.d||{})[k])||0; if(v){ df[k]=(df[k]||0)+v; n+=v; } }); tot+=t; ng+=n;
+      const h=hin[r.hin]||(hin[r.hin]={n:r.name||"",t:0,ng:0}); h.t+=t; h.ng+=n; });
+    return {tot,ng,df,hin,ev:mrEvents(mrItemsEv(j),d,"検査")}; },
+  shot(j,d){ return {ev:mrEvents(mrItemsEv(j),d,"ショット")}; }
+};
+async function mrLoad(force){ if(MR.busy) return; MR.busy=true; const month=MR.month, box=$("mrBody");
+  $("mrMonth").textContent=month.replace(/^(\d+)-0?(\d+)$/,"$1年$2月"); box.innerHTML=`<div class="mrwait">各工程の一覧を読み込んでいます…</div>`;
+  try{ const keys=["suna","yokai","zokei","chuto","kensa","shot"], lists={}, errs=[];
+    await Promise.all(keys.concat(["henka"]).map(async k=>{ try{ lists[k]=(await listOf(P[k],month)).filter(d=>k==="henka"||String(d.date).slice(0,7)===month); }catch(e){ lists[k]=[]; errs.push(P[k].name+"："+(e.message||e)); } }));
+    const jobs=[]; keys.forEach(k=>lists[k].forEach(d=>jobs.push({k,d})));
+    let done=0; const prog=()=>{ if(month===MR.month) box.innerHTML=`<div class="mrwait">日報を読み込んでいます… ${done} / ${jobs.length}<div class="mrbar"><i style="width:${jobs.length?Math.round(done/jobs.length*100):0}%"></i></div><span class="subt">はじめての月は少し時間がかかります（2回目からは速くなります）</span></div>`; };
+    prog(); const res=[];
+    await (async()=>{ let i=0; await Promise.all(Array.from({length:6},async()=>{ while(i<jobs.length){ const x=jobs[i++]; const ck="kanri:mr4:"+x.k+"|"+x.d.date+"|"+(x.d.equip||"");
+          const old=LS.get(ck,null); let s=null;
+          if(!force&&old&&old.u&&old.u===(x.d.u||0)) s=old.s;
+          else { try{ const c=await cfgOf(P[x.k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:x.d.date,equip:x.d.equip||""});
+              const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); s=MR_SUM[x.k](j,x.d.date); if(x.d.u) LS.set(ck,{u:x.d.u,s}); }
+            catch(e){ errs.push(`${P[x.k].name} ${x.d.date} ${x.d.equip||""}：${e.message||e}`); } }
+          res.push({k:x.k,d:x.d,s}); done++; if(done%3===0||done===jobs.length) prog(); } })); })();
+    if(month!==MR.month){ MR.busy=false; return mrLoad(); }
+    let yspec=null; try{ const c=await cfgOf(P.yokai); yspec=(c&&c.spec)||null; const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:"_global",equip:"溶解"});
+      const j=await (await fetch(u,{redirect:"follow"})).json(); const it=(j.items||[]).find(x=>x.type==="spec"); if(it&&it.raw) yspec=it.raw; }catch(e){}
+    MR.data={month,lists,res,errs,yspec:yspec||{}}; mrRender(); }
+  catch(e){ box.innerHTML=`<div class="mrwait" style="color:#b00020">読み込めませんでした（${esc(e.message||e)}）</div>`; }
+  MR.busy=false; }
+// ---- グラフ（1系列・ロイヤルブルー。点にカーソル／タップで値）----
+function mrChart(pts,o){ const W=innerWidth<640?420:900,H=innerWidth<640?230:210,L=46,R=12,T=14,B=30, v=pts.filter(p=>p.y!=null); if(!v.length) return `<div class="subt">データがありません</div>`;
+  let lo=o.min!=null?o.min:Math.min(...v.map(p=>p.y)), hi=Math.max(...v.map(p=>p.y)); if(o.bar) lo=0; if(hi===lo){ hi+=1; lo=o.bar?0:lo-1; } const pad=(hi-lo)*0.1; if(!o.bar){ lo-=pad; } hi+=pad;
+  const X=o.bar?(i=>L+(i+0.5)*(W-L-R)/pts.length):(i=>L+(pts.length<=1?(W-L-R)/2:i*(W-L-R)/(pts.length-1))), Y=y=>T+(H-T-B)*(1-(y-lo)/(hi-lo)), f=n=>(o.fmt||(x=>x.toFixed(1)))(n);
+  if(o.bar&&o.int){ hi=Math.max(3,Math.ceil(hi/3)*3); }
+  let g="", seen={}; for(let k=0;k<=3;k++){ const yv=lo+(hi-lo)*k/3, yy=Y(yv), lb=f(yv); if(seen[lb]) continue; seen[lb]=1; g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" class="mg"/><text x="${L-6}" y="${yy+4}" class="mt" text-anchor="end">${f(yv)}</text>`; }
+  pts.forEach((p,i)=>{ if(i%Math.ceil(pts.length/(W<500?7:16))===0) g+=`<text x="${X(i)}" y="${H-10}" class="mt" text-anchor="middle">${esc(p.x)}</text>`; });
+  let m="";
+  if(o.bar){ const bw=Math.max(3,Math.min(18,(W-L-R)/pts.length*0.6)); pts.forEach((p,i)=>{ if(p.y==null) return; const y0=Y(0), y1=Y(p.y), h=Math.max(1,y0-y1);
+      m+=`<g class="mh"><rect x="${X(i)-bw/2}" y="${y1}" width="${bw}" height="${h}" rx="3" class="mb"/><rect x="${X(i)-bw/2-3}" y="${T}" width="${bw+6}" height="${H-T-B}" fill="transparent"/><title>${esc(p.x)}：${f(p.y)}${o.unit||""}</title></g>`; }); }
+  else { let d="", started=false; pts.forEach((p,i)=>{ if(p.y==null){ started=false; return; } d+=(started?"L":"M")+X(i)+" "+Y(p.y)+" "; started=true; }); m+=`<path d="${d}" class="ml"/>`;
+    pts.forEach((p,i)=>{ if(p.y==null) return; m+=`<g class="mh"><circle cx="${X(i)}" cy="${Y(p.y)}" r="12" fill="transparent"/><circle cx="${X(i)}" cy="${Y(p.y)}" r="4" class="mp"/><title>${esc(p.x)}：${f(p.y)}${o.unit||""}</title></g>`; }); }
+  if(o.ref!=null&&o.ref>lo&&o.ref<hi) m+=`<line x1="${L}" x2="${W-R}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" class="mref"/><text x="${W-R}" y="${Y(o.ref)-4}" class="mt" text-anchor="end">${esc(o.refLabel||"")}</text>`;
+  return `<svg class="mchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"")}">${g}${m}</svg>`; }
+function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {month,lists,res,errs}=D;
+  const [yy,mm]=month.split("-").map(Number), nd=new Date(yy,mm,0).getDate(), days=Array.from({length:nd},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`);
+  const md=d=>`${+d.slice(5,7)}/${+d.slice(8)}`, f0=n=>Math.round(n).toLocaleString(), f1=n=>(Math.round(n*10)/10).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1}), t1=kg=>f1(kg/1000);
+  const by=k=>res.filter(x=>x.k===k&&x.s), lsum=(k,f)=>lists[k].reduce((a,d)=>a+(+d[f]||0),0);
+  // 溶解
+  const Y=by("yokai"), ych=Y.flatMap(x=>x.s.ch.map(c=>Object.assign({d:x.d.date},c))), ykg=ych.reduce((a,c)=>a+c.kg,0), ymn=ych.filter(c=>c.mn!=null), ytp=ych.filter(c=>c.temp!=null);
+  const mats={}; ych.forEach(c=>{ const m=mats[c.mat]||(mats[c.mat]={n:0,mn:[0,0],kg:0}); m.n++; m.kg+=c.kg; if(c.mn!=null){ m.mn[0]+=c.mn; m.mn[1]++; } });
+  const mix={}; ych.forEach(c=>Object.entries(c.mix).forEach(([k,v])=>mix[k]=(mix[k]||0)+v));
+  // 溶解：成分（C・Si）と出湯温度の規格外（溶解日報の設定の規格で判定）
+  const SP=D.yspec||{}, rg=(a,b)=>({min:a,max:b});
+  const mSpec=m=>{ const s=SP[m]; if(s&&["c","si"].some(k=>s[k]&&s[k].min!=null&&s[k].max!=null)) return s; const f=(SP.FC250||{}).c;
+    if(m==="その他SiL") return {c:f&&f.min!=null?{min:f.min,max:f.max}:rg(null,null),si:rg(1.60,1.65)}; if(m==="1204") return {c:rg(3.30,3.35),si:rg(1.60,1.65)}; return s||null; };
+  const okS=s=>s&&s.min!=null&&s.max!=null&&s.min!==""&&s.max!=="";
+  const cmp={}; ych.forEach(c=>{ const o=cmp[c.mat]||(cmp[c.mat]={n:0,c:[0,0],si:[0,0],t:[0,0],any:0,ng:0,ce:[0,0],cv:[],sv:[]}); o.n++; const s=mSpec(c.mk)||{}; let any=false,ng=false;
+    [["c",s.c],["si",s.si],["t",SP.temp]].forEach(([k,sp])=>{ const v=k==="t"?c.temp:c[k]; if(v==null||!okS(sp)) return; any=true; o[k][1]++; if(v<+sp.min||v>+sp.max){ o[k][0]++; ng=true; } });
+    if(c.jm){ any=true; ng=c.jm==="NG"; } if(any) o.any++; if(ng) o.ng++; if(c.ce!=null){ o.ce[0]+=c.ce; o.ce[1]++; } if(c.c!=null) o.cv.push(c.c); if(c.si!=null) o.sv.push(c.si); });
+  const kw=ych.filter(c=>c.kwh!=null&&c.kg>0), kwU=kw.reduce((a,c)=>a+c.kwh,0), kwKg=kw.reduce((a,c)=>a+c.kg,0), kwPt=kwKg>0?kwU/(kwKg/1000):null;
+  const kwMat={}; kw.forEach(c=>{ const o=kwMat[c.mat]||(kwMat[c.mat]={u:0,kg:0,n:0,mn:0,mc:0}); o.u+=c.kwh; o.kg+=c.kg; o.n++; if(c.mn!=null){ o.mn+=c.mn; o.mc++; } });
+  const price=+(LS.get("kanri:kwhPrice",0))||0;
+  const dlM=ych.filter(c=>c.dl==="melt").length, dlP=ych.filter(c=>c.dl==="pour").length;
+  const sd=a=>{ if(a.length<2) return null; const m=a.reduce((x,y)=>x+y,0)/a.length; return Math.sqrt(a.reduce((x,y)=>x+(y-m)*(y-m),0)/(a.length-1)); };
+  const tAll=ytp.map(c=>c.temp), tMat={}; ytp.forEach(c=>(tMat[c.mat]=tMat[c.mat]||[]).push(c.temp));
+  // 造型
+  const Z=by("zokei"), zfr=Z.reduce((a,x)=>a+x.s.fr,0), zq=Z.reduce((a,x)=>a+x.s.q,0), zkg=Z.reduce((a,x)=>a+x.s.kg,0);
+  const hin={}; Z.forEach(x=>Object.entries(x.s.hin).forEach(([h,v])=>{ const o=hin[h]||(hin[h]={n:v.n,q:0,kg:0}); o.q+=v.q; o.kg+=v.kg; if(!o.n) o.n=v.n; }));
+  const zun=Z.reduce((a,x)=>a+(x.s.un||0),0); const zEq={}; Z.forEach(x=>{ const e=x.d.equip||""; const o=zEq[e]||(zEq[e]={fr:0,kg:0,d:0,mins:0,frT:0,cd:0,cdiff:0,cabs:0,cn:0}); o.fr+=x.s.fr; o.kg+=x.s.kg; o.d++; o.mins+=x.s.mins||0; o.frT+=x.s.frT||0;
+    if(x.s.cnt!=null&&x.s.fr>0){ o.cn++; const df=x.s.cnt-x.s.fr; o.cdiff+=df; o.cabs+=Math.abs(df); if(df!==0) o.cd++; } });
+  // 砂処理
+  const S=by("suna"), sAvg=k=>{ let a=0,n=0; S.forEach(x=>{ a+=x.s.s[k][0]; n+=x.s.s[k][1]; }); return n?a/n:null; }, sBatch=S.reduce((a,x)=>a+(x.s.batch||0),0);
+  // 注湯・検査・ショット
+  const C=by("chuto"), cch=C.reduce((a,x)=>a+x.s.ch,0), cn=C.reduce((a,x)=>a+x.s.n,0), cng=C.reduce((a,x)=>a+x.s.ng,0), cts=C.reduce((a,x)=>a+x.s.ts,0), ctc=C.reduce((a,x)=>a+x.s.tc,0);
+  const K=by("kensa"), kdf={}, khin={}; K.forEach(x=>{ Object.entries(x.s.df||{}).forEach(([k,v])=>kdf[k]=(kdf[k]||0)+v); Object.entries(x.s.hin||{}).forEach(([h,v])=>{ const o=khin[h]||(khin[h]={n:v.n,t:0,ng:0}); o.t+=v.t; o.ng+=v.ng; }); });
+  const crw=C.flatMap(x=>x.s.rw||[]), cMat={}, BANDS=[["7〜12時",420,720],["12〜17時",720,1020],["17〜22時",1020,1320],["22〜7時",1320,420]], cBand=BANDS.map(()=>[0,0]); let cFirst=[0,0];
+  crw.forEach(([m,t,g,f])=>{ const o=cMat[m]||(cMat[m]=[0,0]); o[0]+=g; o[1]++; if(t!=null){ BANDS.forEach(([,a,b],i)=>{ if(a<b?(t>=a&&t<b):(t>=a||t<b)){ cBand[i][0]+=g; cBand[i][1]++; } }); } if(f){ cFirst[0]+=g; cFirst[1]++; } });
+  const pct=(a,b)=>b?(a/b*100).toFixed(1)+" %":"－";
+  const kTot=K.length?K.reduce((a,x)=>a+(x.s.tot||0),0):lsum("kensa","total"), kNg=K.length?K.reduce((a,x)=>a+(x.s.ng||0),0):lsum("kensa","ng"), shN=lsum("shot","filled"), shB=lsum("shot","balls"), shT=lsum("shot","total");
+  // 異常報告
+  const ev=res.filter(x=>x.s).flatMap(x=>x.s.ev||[]).sort((a,b)=>(b.d+b.t).localeCompare(a.d+a.t)); const PN=["砂処理","溶解","造型","注湯","検査","ショット"];
+  const evc={}; ev.forEach(e=>evc[e.p]=(evc[e.p]||0)+1); const hk=lists.henka.filter(d=>String(d.date).slice(0,7)===month), hkN=hk.reduce((a,d)=>a+(+d.filled||0),0), hkNg=hk.reduce((a,d)=>a+(+d.ng||0),0);
+  // 日ごと
+  const day=days.map(d=>{ const yc=ych.filter(c=>c.d===d), ykg1=yc.reduce((a,c)=>a+c.kg,0), ym=yc.filter(c=>c.mn!=null), zz=Z.filter(x=>x.d.date===d), zk=zz.reduce((a,x)=>a+x.s.kg,0), zf=zz.reduce((a,x)=>a+x.s.fr,0);
+    const ss=S.filter(x=>x.d.date===d), sv=k=>{ let a=0,n=0; ss.forEach(x=>{ a+=x.s.s[k][0]; n+=x.s.s[k][1]; }); return n?a/n:null; };
+    const yk=yc.filter(c=>c.kwh!=null&&c.kg>0), ykw=yk.reduce((a,c)=>a+c.kwh,0), ykk=yk.reduce((a,c)=>a+c.kg,0);
+    return {d,kwh:yk.length?ykw:null,kpt:ykk>0?ykw/(ykk/1000):null,ych:yc.length,ykg:ykg1,ymn:ym.length?ym.reduce((a,c)=>a+c.mn,0)/ym.length:null,zfr:zf,zkg:zk,yl:ykg1>0&&zk>0?zk/ykg1*100:null,moist:sv("moist"),cb:sv("cb"),h:sv("h"),
+      batch:ss.reduce((a,x)=>a+(x.s.batch||0),0)||null,cch:C.filter(x=>x.d.date===d).reduce((a,x)=>a+x.s.ch,0),ev:ev.filter(e=>e.d===d).length}; });
+  const ydays=day.filter(x=>x.ych).length; const work=day.filter(x=>x.ych||x.zfr||x.cch).length, yl=ykg>0&&zkg>0?zkg/ykg*100:null;
+  const tile=(l,v,s)=>`<div class="mtile"><div class="ml1">${l}</div><div class="mv">${v}</div><div class="ml2">${s||""}</div></div>`;
+  let h=`<div class="mrhead"><div><div class="mrtitle">鋳造課 月次実績報告　${yy}年${mm}月</div><div class="subt">各工程の日報（スプレッドシート）から集計　作成 ${fmtT(Date.now())}</div></div><img class="mrlogo" src="data:image/png;base64,${MR_LOGO}" alt="シャインテック"></div>`;
+  if(errs.length) h+=`<div class="mrerr">⚠ 読み込めなかった日報があります（${errs.length}件）：${esc(errs.slice(0,4).join(" ／ "))}${errs.length>4?" …":""}</div>`;
+  h+=`<div class="mtiles">`+tile("稼働日数",`${work}<small>日</small>`,"溶解・造型・注湯のどれかが入力された日")+tile("溶解チャージ数",`${ych.length}<small>ch</small>`,`出湯量 ${t1(ykg)} t`)+
+    tile("1日平均チャージ数",ydays?`${f1(ych.length/ydays)}<small>ch</small>`:"－",`溶解した日 ${ydays} 日`)+tile("平均溶解時間",ymn.length?`${f0(ymn.reduce((a,c)=>a+c.mn,0)/ymn.length)}<small>分</small>`:"－","開始〜出湯（1チャージ）")+tile("造型枠数",`${f0(zfr)}<small>枠</small>`,`${f0(zq)} 個`)+
+    tile("製品総重量",`${t1(zkg)}<small>t</small>`,"テスト品を除く")+tile("製品歩留まり",yl!=null?`${f1(yl)}<small>%</small>`:"－","製品総重量 ÷ 出湯量")+
+    tile("溶解の電力量",kw.length?`${f0(kwPt)}<small>kWh/t</small>`:"－",kw.length?`合計 ${f1(kwU/1000)} MWh（${kw.length} ch）`+(price?` ／ ${f0(kwU*price/10000)} 万円`:""):"溶解日報に電力量の入力がありません")+tile("検査 不良率",kTot?`${(kNg/kTot*100).toFixed(2)}<small>%</small>`:"－",`不良 ${f0(kNg)} ／ 検査 ${f0(kTot)} 個`)+tile("砂処理バッチ数",sBatch?`${f0(sBatch)}<small>回</small>`:"－",`測定 ${S.reduce((a,x)=>a+x.s.n,0)} 回`)+tile("異常・変化点",`${ev.length+hkN}<small>件</small>`,`日報 ${ev.length} ／ 4M管理表 ${hkN}`)+`</div>`;
+  // 溶解
+  const mOrd=Object.entries(mats).sort((a,b)=>b[1].n-a[1].n);
+  h+=`<section class="mrsec"><h3>溶解</h3><div class="mrcap">材質ごとの平均溶解時間（開始〜出湯）</div><div class="mtiles">`+
+    mOrd.map(([m,v])=>tile(esc(m),v.mn[1]?`${f0(v.mn[0]/v.mn[1])}<small>分</small>`:"－",`${v.n} チャージ ／ 1日平均 ${ydays?f1(v.n/ydays):"－"} ch`)).join("")+`</div><div class="mrg2"><div><table class="mrt"><thead><tr><th>材質</th><th>チャージ数</th><th>1日平均</th><th>出湯量 (t)</th><th>平均溶解時間</th><th>最短〜最長</th></tr></thead><tbody>`+
+    mOrd.map(([m,v])=>{ const ms=ych.filter(c=>c.mat===m&&c.mn!=null).map(c=>c.mn); return `<tr><td>${esc(m)}</td><td>${v.n}</td><td>${ydays?f1(v.n/ydays):"－"}</td><td>${t1(v.kg)}</td><td>${v.mn[1]?f0(v.mn[0]/v.mn[1])+" 分":"－"}</td><td>${ms.length?Math.min(...ms)+"〜"+Math.max(...ms)+" 分":"－"}</td></tr>`; }).join("")+
+    `<tr class="tot"><td>合計</td><td>${ych.length}</td><td>${ydays?f1(ych.length/ydays):"－"}</td><td>${t1(ykg)}</td><td>${ymn.length?f0(ymn.reduce((a,c)=>a+c.mn,0)/ymn.length)+" 分":"－"}</td><td>${ymn.length?Math.min(...ymn.map(c=>c.mn))+"〜"+Math.max(...ymn.map(c=>c.mn))+" 分":"－"}</td></tr></tbody></table>`+
+    `<div class="subt">1日平均 ${ydays?f1(ych.length/ydays):"－"} チャージ（溶解した日 ${ydays} 日）／ 平均出湯温度 ${ytp.length?f0(ytp.reduce((a,c)=>a+c.temp,0)/ytp.length)+" ℃":"－"}</div></div>`+
+    `<div><table class="mrt"><thead><tr><th>原材料</th><th>使用量 (kg)</th><th>1チャージ平均 (kg)</th></tr></thead><tbody>`+
+    MR_MIX.filter(([k])=>mix[k]).map(([k,l])=>`<tr><td>${l}</td><td>${f0(mix[k])}</td><td>${ych.length?f1(mix[k]/ych.length):"－"}</td></tr>`).join("")+
+    `<tr class="tot"><td>合計</td><td>${f0(ykg)}</td><td>${ych.length?f1(ykg/ych.length):"－"}</td></tr></tbody></table></div></div>`+
+    `<div class="mrcap">日ごとのチャージ数</div>${mrChart(day.map(x=>({x:md(x.d),y:x.ych||null})),{bar:true,int:true,unit:" ch",fmt:n=>String(Math.round(n)),title:"日ごとのチャージ数"})}`+
+    `<div class="mrcap">日ごとの平均溶解時間（分）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.ymn})),{unit:" 分",fmt:n=>String(Math.round(n)),title:"平均溶解時間"})}`+
+    `<div class="mrcap">電力量（盤の「只今の電力量」の差から計算）　電力単価 <input id="mrPrice" type="number" step="0.1" min="0" value="${price||""}" placeholder="円/kWh" style="width:90px;min-height:32px;border:1px solid #9db0e8;border-radius:6px;padding:0 6px"> 円/kWh</div>`+
+    (kw.length?`<table class="mrt"><thead><tr><th>材質</th><th>チャージ</th><th>電力量 (kWh)</th><th>1トンあたり (kWh/t)</th><th>1チャージ平均 (kWh)</th><th>1分あたり (kWh)</th>${price?"<th>電力費 (円)</th><th>1トンあたり (円/t)</th>":""}</tr></thead><tbody>`+
+      Object.entries(kwMat).sort((a,b)=>b[1].n-a[1].n).map(([m,o])=>`<tr><td>${esc(m)}</td><td>${o.n}</td><td>${f0(o.u)}</td><td>${f0(o.u/(o.kg/1000))}</td><td>${f0(o.u/o.n)}</td><td>${o.mc?f1(o.u/o.n/(o.mn/o.mc)):"－"}</td>${price?`<td>${f0(o.u*price)}</td><td>${f0(o.u/(o.kg/1000)*price)}</td>`:""}</tr>`).join("")+
+      `<tr class="tot"><td>合計</td><td>${kw.length}</td><td>${f0(kwU)}</td><td>${f0(kwPt)}</td><td>${f0(kwU/kw.length)}</td><td></td>${price?`<td>${f0(kwU*price)}</td><td>${f0(kwPt*price)}</td>`:""}</tr></tbody></table>`+
+      `<div class="mrcap">日ごとの電力量（kWh/t）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.kpt})),{unit:" kWh/t",fmt:n=>String(Math.round(n)),title:"電力量 kWh/t",ref:kwPt,refLabel:kwPt!=null?`月平均 ${f0(kwPt)}`:""})}`
+     :`<div class="subt">溶解日報に電力量の入力がありません（溶解日報 v23 から入力できます）</div>`)+
+    `<div class="mrg2"><div><div class="mrcap">成分・出湯温度の規格外（溶解日報の規格で判定）</div><table class="mrt"><thead><tr><th>材質</th><th>判定したチャージ</th><th>NG</th><th>NG率</th><th>C 規格外</th><th>Si 規格外</th><th>出湯温度 規格外</th><th>CE 平均</th></tr></thead><tbody>`+
+      mOrd.map(([m])=>{ const o=cmp[m]; return `<tr><td>${esc(m)}</td><td>${o.any}</td><td>${o.ng}</td><td>${pct(o.ng,o.any)}</td><td>${o.c[1]?o.c[0]+" / "+o.c[1]:"－"}</td><td>${o.si[1]?o.si[0]+" / "+o.si[1]:"－"}</td><td>${o.t[1]?o.t[0]+" / "+o.t[1]:"－"}</td><td>${o.ce[1]?(o.ce[0]/o.ce[1]).toFixed(2):"－"}</td></tr>`; }).join("")+
+      `</tbody></table><div class="subt">「C 規格外」などは 規格外の回数 ／ 測った回数。C・Si のばらつき（標準偏差）：`+mOrd.map(([m])=>{ const o=cmp[m], a=sd(o.cv), b=sd(o.sv); return `${esc(m)} C ${a!=null?a.toFixed(3):"－"}・Si ${b!=null?b.toFixed(3):"－"}`; }).join("　")+`</div></div>`+
+    `<div><div class="mrcap">遅れと出湯温度のばらつき</div><table class="mrt"><thead><tr><th>項目</th><th>回数・値</th></tr></thead><tbody>`+
+      `<tr><td>遅れ（溶解工程）</td><td>${dlM} 回（${pct(dlM,ych.length)}）</td></tr><tr><td>遅れ（注湯工程）</td><td>${dlP} 回（${pct(dlP,ych.length)}）</td></tr>`+
+      `<tr><td>出湯温度 平均 ± 標準偏差</td><td>${tAll.length?f0(tAll.reduce((a,b)=>a+b,0)/tAll.length)+" ± "+(sd(tAll)!=null?sd(tAll).toFixed(1):"－")+" ℃":"－"}</td></tr>`+
+      Object.entries(tMat).map(([m,a])=>`<tr><td>　${esc(m)}</td><td>${f0(a.reduce((x,y)=>x+y,0)/a.length)} ± ${sd(a)!=null?sd(a).toFixed(1):"－"} ℃（最低 ${Math.min(...a)}・最高 ${Math.max(...a)}）</td></tr>`).join("")+
+      `</tbody></table></div></div></section>`;
+  // 砂処理
+  h+=`<section class="mrsec"><h3>砂処理</h3><table class="mrt"><thead><tr><th>バッチ数</th><th>測定回数</th><th>水分 平均 (%)</th><th>CB 平均 (%)</th><th>鋳型硬度 平均</th><th>外気温 平均 (℃)</th><th>湿度 平均 (%)</th><th>規格外</th></tr></thead><tbody><tr>`+
+    `<td>${sBatch?f0(sBatch):"－"}</td><td>${S.reduce((a,x)=>a+x.s.n,0)}</td>`+["moist","cb","h","temp","humid"].map(k=>{ const v=sAvg(k); return `<td>${v==null?"－":(k==="h"?v.toFixed(2):f1(v))}</td>`; }).join("")+`<td>${lsum("suna","ng")} 件</td></tr></tbody></table>`+
+    `<div class="mrcap">水分（日平均 %）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.moist})),{unit:" %",fmt:n=>n.toFixed(2),title:"水分"})}`+
+    `<div class="mrcap">CB（日平均 %）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.cb})),{unit:" %",fmt:n=>n.toFixed(1),title:"CB"})}`+
+    `<div class="mrcap">鋳型硬度（日平均 kg/cm²）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.h})),{fmt:n=>n.toFixed(1),title:"鋳型硬度"})}`+
+    `<div class="mrcap">規格外の項目別回数（規格：水分 3.0〜4.0%・CB 30〜40%・鋳型硬度 13〜21／狙い：水分 3.1〜3.5%・CB 33〜37%・鋳型硬度 17〜19）</div><table class="mrt"><thead><tr><th>項目</th><th>測定回数</th><th>規格外</th><th>規格外の割合</th><th>狙い外（規格内）</th></tr></thead><tbody>`+
+    [["moist","水分"],["cb","CB"],["hard","鋳型硬度"]].map(([k,l])=>{ const nr=S.reduce((a,x)=>a+((x.s.nr||{})[k]||0),0), g=S.reduce((a,x)=>a+((x.s.ng||{})[k]||0),0), w=S.reduce((a,x)=>a+((x.s.wn||{})[k]||0),0);
+      return `<tr><td>${l}</td><td>${nr}</td><td>${g}</td><td>${pct(g,nr)}</td><td>${w}</td></tr>`; }).join("")+`</tbody></table></section>`;
+  // 造型
+  h+=`<section class="mrsec"><h3>造型</h3><div class="mrg2"><div><table class="mrt"><thead><tr><th>号機</th><th>稼働日</th><th>造型枠数</th><th>製品重量 (t)</th><th>造型時間</th><th>1時間あたり</th></tr></thead><tbody>`+
+    Object.entries(zEq).sort().map(([e,v])=>`<tr><td>${esc(e)}</td><td>${v.d}</td><td>${f0(v.fr)}</td><td>${t1(v.kg)}</td><td>${v.mins?f1(v.mins/60)+" 時間":"－"}</td><td>${v.mins?f1(v.frT/(v.mins/60))+" 枠":"－"}</td></tr>`).join("")+
+    `<tr class="tot"><td>合計</td><td></td><td>${f0(zfr)}</td><td>${t1(zkg)}</td><td></td><td></td></tr></tbody></table>`+
+    `<div class="mrcap">カウンターとの差（日報の造型数の合計 と カウンター）</div><table class="mrt"><thead><tr><th>号機</th><th>カウンター記入日</th><th>差があった日</th><th>差の合計</th><th>差の絶対値の合計</th></tr></thead><tbody>`+
+    Object.entries(zEq).sort().map(([e,v])=>`<tr><td>${esc(e)}</td><td>${v.cn}</td><td>${v.cd}</td><td>${v.cdiff>0?"+":""}${f0(v.cdiff)} 枠</td><td>${f0(v.cabs)} 枠</td></tr>`).join("")+`</tbody></table>`+
+    `<div class="subt">未注湯 ${f0(zun)} 枠${zfr?`（${f1(zun/zfr*100)}%）`:""}</div><div class="subt">製品歩留まり ${yl!=null?f1(yl)+" %":"－"}（製品総重量 ${t1(zkg)} t ÷ 溶解の出湯量 ${t1(ykg)} t）</div></div>`+
+    `<div><table class="mrt"><thead><tr><th>品番（重量の多い順）</th><th>個数</th><th>重量 (t)</th></tr></thead><tbody>`+
+    Object.entries(hin).sort((a,b)=>b[1].kg-a[1].kg).slice(0,12).map(([k,v])=>`<tr><td>${esc(k)}${v.n?` <span class="subt">${esc(v.n)}</span>`:""}</td><td>${f0(v.q)}</td><td>${t1(v.kg)}</td></tr>`).join("")+
+    `</tbody></table>${Object.keys(hin).length>12?`<div class="subt">ほか ${Object.keys(hin).length-12} 品番</div>`:""}</div></div>`+
+    `<div class="mrcap">日ごとの製品歩留まり（%）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.yl})),{unit:" %",fmt:n=>n.toFixed(1),title:"製品歩留まり",ref:yl,refLabel:yl!=null?`月平均 ${f1(yl)}%`:""})}</section>`;
+  // 注湯・検査・ショット
+  h+=`<section class="mrsec"><h3>注湯・検査・ショット</h3><table class="mrt"><thead><tr><th>工程</th><th>実績</th><th>規格外・不良</th></tr></thead><tbody>`+
+    `<tr><td>注湯</td><td>${cch} チャージ ／ 測定 ${cn} 回 ／ 平均受湯温度 ${ctc?f0(cts/ctc)+" ℃":"－"}</td><td>温度の規格外 ${cng} 回${cn?`（${f1(cng/cn*100)}%）`:""}</td></tr>`+
+    `<tr><td>検査</td><td>総数 ${f0(kTot)} 個</td><td>不良 ${f0(kNg)} 個${kTot?`（不良率 ${(kNg/kTot*100).toFixed(2)}%）`:""}</td></tr>`+
+    `<tr><td>ショット</td><td>${f0(shN)} 件${shT?` ／ 総数 ${f0(shT)}`:""}${shB?` ／ 玉投入 ${f0(shB)} 回`:""}</td><td>－</td></tr></tbody></table>`+
+    `<div class="mrg2"><div><div class="mrcap">注湯 受湯温度の規格外（材質別）</div><table class="mrt"><thead><tr><th>材質</th><th>測定</th><th>規格外</th><th>規格外率</th></tr></thead><tbody>`+
+      Object.entries(cMat).sort((a,b)=>b[1][1]-a[1][1]).map(([m,v])=>`<tr><td>${esc(m)}</td><td>${v[1]}</td><td>${v[0]}</td><td>${pct(v[0],v[1])}</td></tr>`).join("")+`</tbody></table></div>`+
+    `<div><div class="mrcap">注湯 受湯温度の規格外（時間帯別）</div><table class="mrt"><thead><tr><th>時間帯</th><th>測定</th><th>規格外</th><th>規格外率</th></tr></thead><tbody>`+
+      BANDS.map(([l],i)=>`<tr><td>${l}</td><td>${cBand[i][1]}</td><td>${cBand[i][0]}</td><td>${pct(cBand[i][0],cBand[i][1])}</td></tr>`).join("")+
+      `<tr class="tot"><td>その日の1チャージ目</td><td>${cFirst[1]}</td><td>${cFirst[0]}</td><td>${pct(cFirst[0],cFirst[1])}</td></tr></tbody></table></div></div></section>`;
+  // 検査の不良 TOP5（不良の種類・品番）
+  const dTop=MR_DEF.map(([k,l])=>[l,kdf[k]||0]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]), hTop=Object.entries(khin).filter(([,v])=>v.ng>0).sort((a,b)=>b[1].ng-a[1].ng);
+  const dMax=dTop.length?dTop[0][1]:1;
+  h+=`<section class="mrsec"><h3>検査 不良 TOP5</h3><div class="mrg2"><div><div class="mrcap">不良の種類</div>`+(dTop.length?`<table class="mrt"><thead><tr><th>順位</th><th>不良</th><th>個数</th><th>不良に占める割合</th><th>不良率（対 検査数）</th></tr></thead><tbody>`+
+      dTop.slice(0,5).map(([l,v],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${esc(l)}<div class="mrhb"><i style="width:${Math.round(v/dMax*100)}%"></i></div></td><td>${f0(v)}</td><td>${kNg?f1(v/kNg*100)+" %":"－"}</td><td>${kTot?(v/kTot*100).toFixed(2)+" %":"－"}</td></tr>`).join("")+
+      `<tr class="tot"><td></td><td style="text-align:left">不良 合計</td><td>${f0(kNg)}</td><td>100 %</td><td>${kTot?(kNg/kTot*100).toFixed(2)+" %":"－"}</td></tr></tbody></table>${dTop.length>5?`<div class="subt">ほか：${dTop.slice(5).map(([l,v])=>esc(l)+" "+f0(v)).join("、")}</div>`:""}`:`<div class="subt">不良の記録はありません</div>`)+
+    `</div><div><div class="mrcap">不良の多い品番</div>`+(hTop.length?`<table class="mrt"><thead><tr><th>順位</th><th>品番</th><th>不良</th><th>検査数</th><th>不良率</th></tr></thead><tbody>`+
+      hTop.slice(0,5).map(([k,v],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${esc(k)}${v.n?` <span class="subt">${esc(v.n)}</span>`:""}</td><td>${f0(v.ng)}</td><td>${f0(v.t)}</td><td>${v.t?(v.ng/v.t*100).toFixed(2)+" %":"－"}</td></tr>`).join("")+`</tbody></table>`:`<div class="subt">不良の記録はありません</div>`)+`</div></div></section>`;
+  // 異常報告
+  h+=`<section class="mrsec"><h3>異常・変化点の報告</h3><table class="mrt"><thead><tr>${PN.map(p=>`<th>${p}</th>`).join("")}<th>4M変化点管理表</th><th>合計</th></tr></thead><tbody><tr>`+
+    PN.map(p=>`<td>${evc[p]||0}</td>`).join("")+`<td>${hkN}${hkNg?`<div class="subt">処置まだ ${hkNg}</div>`:""}</td><td><b>${ev.length+hkN}</b></td></tr></tbody></table>`+
+    (ev.length?`<table class="mrt mrev"><thead><tr><th>日付</th><th>工程</th><th>内容</th><th>処置</th><th>担当</th></tr></thead><tbody>`+
+      ev.slice(0,60).map(e=>`<tr><td>${md(e.d)} ${esc(e.t)}</td><td>${esc(e.p)}</td><td>${esc(e.c)}</td><td>${esc(e.a)}</td><td>${esc(e.w)}</td></tr>`).join("")+`</tbody></table>${ev.length>60?`<div class="subt">ほか ${ev.length-60} 件</div>`:""}`:`<div class="subt">日報の異常・変化点の記録はありません</div>`)+`</section>`;
+  // 日ごとの一覧
+  h+=`<section class="mrsec"><h3>日ごとの実績</h3><div class="mrscroll"><table class="mrt mrday"><thead><tr><th>日付</th><th>溶解 ch</th><th>出湯量 t</th><th>平均溶解時間</th><th>電力量 kWh/t</th><th>造型枠数</th><th>製品重量 t</th><th>歩留まり %</th><th>注湯 ch</th><th>バッチ数</th><th>水分 %</th><th>CB %</th><th>異常・変化点</th></tr></thead><tbody>`+
+    day.filter(x=>x.ych||x.zfr||x.cch||x.moist!=null||x.ev).map(x=>`<tr><td>${md(x.d)}（${"日月火水木金土"[new Date(x.d+"T00:00:00").getDay()]}）</td><td>${x.ych||""}</td><td>${x.ykg?t1(x.ykg):""}</td><td>${x.ymn!=null?f0(x.ymn)+" 分":""}</td><td>${x.kpt!=null?f0(x.kpt):""}</td><td>${x.zfr?f0(x.zfr):""}</td><td>${x.zkg?t1(x.zkg):""}</td><td>${x.yl!=null?f1(x.yl):""}</td><td>${x.cch||""}</td><td>${x.batch?f0(x.batch):""}</td><td>${x.moist!=null?x.moist.toFixed(2):""}</td><td>${x.cb!=null?f1(x.cb):""}</td><td>${x.ev||""}</td></tr>`).join("")+
+    `</tbody></table></div></section>`;
+  box.innerHTML=h; const pi=$("mrPrice"); if(pi) pi.onchange=()=>{ LS.set("kanri:kwhPrice",+pi.value||0); mrRender(); }; }
+function mrOpen(){ if(!MR.month) MR.month=st.date.slice(0,7); if(!MR.data||MR.data.month!==MR.month) mrLoad(); else mrRender(); }
+const mrShift=n=>{ let [y,m]=MR.month.split("-").map(Number); m+=n; if(m<1){m=12;y--;} if(m>12){m=1;y++;} MR.month=`${y}-${String(m).padStart(2,"0")}`; MR.data=null; mrLoad(); };
+$("mrPrev").onclick=()=>mrShift(-1); $("mrNext").onclick=()=>mrShift(1); $("mrReload").onclick=()=>{ MR.data=null; mrLoad(true); };
+$("mrPrint").onclick=()=>{ document.body.classList.add("pmon"); window.print(); setTimeout(()=>document.body.classList.remove("pmon"),500); };
+
 // ---- 整合性チェック（タブ）：月ごとに日付を並べて、選んだ日の結果を工程ごとに出す ----
 const ck={month:null,day:null,lv:"bad",proc:"all",cache:{},sup:{}};
 async function ckGet(m,force){ const o=ck.cache[m]; if(!force&&o&&Date.now()-o.at<60*1000) return o.list;
@@ -514,7 +775,7 @@ $("qView").addEventListener("change",renderQR); $("qAdm").addEventListener("chan
 $("qPrint").onclick=()=>{ document.body.classList.toggle("qr-noadm",!$("qAdm").checked); window.print(); };
 $("qCopyAll").onclick=async()=>{ const {F,A}=qrList(), L=["鋳造課 日報アプリ URL一覧",""," 【現場用】",...F.map(x=>`${x.name}（${x.sub}）\n  ${ORIG+x.path}`),""," 【管理者のみ（現場に貼らない）】",...A.map(x=>`${x.name}\n  ${ORIG+x.path}`)];
   toastK(await copyText(L.join("\n"))?"すべてのURLをコピーしました":"コピーできませんでした"); };
-(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||["home","del","qr","chk"].includes(st.tab)?st.tab:"home"); })();
+(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||["home","del","qr","chk","mon"].includes(st.tab)?st.tab:"home"); })();
 })();
 </script>
 </body>
