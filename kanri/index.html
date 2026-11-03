@@ -521,11 +521,16 @@ async function mrLoad(force){ if(MR.busy) return; MR.busy=true; const month=MR.m
   try{ const keys=["suna","yokai","zokei","chuto","kensa","shot"], lists={}, errs=[];
     await Promise.all(keys.concat(["henka"]).map(async k=>{ try{ lists[k]=(await listOf(P[k],month)).filter(d=>k==="henka"||String(d.date).slice(0,7)===month); }catch(e){ lists[k]=[]; errs.push(P[k].name+"："+(e.message||e)); } }));
     const jobs=[]; keys.forEach(k=>lists[k].forEach(d=>jobs.push({k,d})));
+    // 速くする：まだ覚えていない日報が3つ以上ある工程は、月の分を1回でまとめて読む（Apps Script に「月まとめ」が入っているとき）
+    const miss={}; if(!force) jobs.forEach(x=>{ const o=LS.get(mrCK(x.k,x.d),null); if(!(o&&o.u&&o.u===(x.d.u||0))) miss[x.k]=(miss[x.k]||0)+1; }); else keys.forEach(k=>miss[k]=lists[k].length);
+    box.innerHTML=`<div class="mrwait">日報をまとめて読み込んでいます…</div>`;
+    const MD={}; await Promise.all(keys.filter(k=>miss[k]>=3).map(async k=>{ MD[k]=await mrMonthData(k,month,force); }));
     let done=0; const prog=()=>{ if(month===MR.month) box.innerHTML=`<div class="mrwait">日報を読み込んでいます… ${done} / ${jobs.length}<div class="mrbar"><i style="width:${jobs.length?Math.round(done/jobs.length*100):0}%"></i></div><span class="subt">はじめての月は少し時間がかかります（2回目からは速くなります）</span></div>`; };
     prog(); const res=[];
-    await (async()=>{ let i=0; await Promise.all(Array.from({length:6},async()=>{ while(i<jobs.length){ const x=jobs[i++]; const ck="kanri:mr7:"+x.k+"|"+x.d.date+"|"+(x.d.equip||"");
+    await (async()=>{ let i=0; await Promise.all(Array.from({length:10},async()=>{ while(i<jobs.length){ const x=jobs[i++]; const ck=mrCK(x.k,x.d);
           const old=LS.get(ck,null); let s=null;
           if(!force&&old&&old.u&&old.u===(x.d.u||0)) s=old.s;
+          else if(MD[x.k]){ try{ s=MR_SUM[x.k](mrFromMD(x.k,MD[x.k],x.d),x.d.date); if(x.d.u) LS.set(ck,{u:x.d.u,s}); }catch(e){ errs.push(`${P[x.k].name} ${x.d.date}：${e.message||e}`); } }
           else { try{ const c=await cfgOf(P[x.k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:x.d.date,equip:x.d.equip||""});
               const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); s=MR_SUM[x.k](j,x.d.date); if(x.d.u) LS.set(ck,{u:x.d.u,s}); }
             catch(e){ errs.push(`${P[x.k].name} ${x.d.date} ${x.d.equip||""}：${e.message||e}`); } }
@@ -720,13 +725,20 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
       secs[0].parentNode.insertBefore(nav,secs[0]); } }
   setTimeout(()=>{ mrLink().catch(e=>{ const b=$("mrLink"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); mrMold().catch(e=>{ const b=$("mrMold"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); },0); const pi=$("mrPrice"); if(pi) pi.onchange=()=>{ LS.set("kanri:kwhPrice",+pi.value||0); mrRender(); }; }
 // ---- 月次実績の追加分：ほかの月の日報も読む（不良と前工程・模型の使用枚数）----
-const MR_LC={};
+const MR_LC={}, MR_MD={};
+const mrCK=(k,d)=>"kanri:mr7:"+k+"|"+d.date+"|"+(d.equip||"");
+// 月まとめ（Apps Script の「削除」ファイルに入っている monthData）。入っていなければ null → 1日ずつ読む
+async function mrMonthData(k,m,force){ const key=k+"|"+m, o=MR_MD[key]; if(!force&&o&&Date.now()-o.at<120000) return o.v; let v=null;
+  try{ const j=await postTo(P[k],{action:"monthData",month:m}); if(j&&j.month===m&&j.days) v=j; }catch(e){} MR_MD[key]={at:Date.now(),v}; return v; }
+function mrFromMD(k,md,d){ const x=md.days[d.date+"|"+(d.equip||"")]; return k==="suna"?Object.assign({ok:true,rows:[],header:null,events:[]},x||{}):{ok:true,items:x||[]}; }
 async function mrList(k,m){ const key=k+"|"+m, o=MR_LC[key]; if(o&&Date.now()-o.at<120000) return o.L; const L=(await listOf(P[k],m)).filter(d=>String(d.date).slice(0,7)===m); MR_LC[key]={at:Date.now(),L}; return L; }
-async function mrFetch(k,d){ const ck="kanri:mr7:"+k+"|"+d.date+"|"+(d.equip||""), old=LS.get(ck,null); if(old&&old.u&&old.u===(d.u||0)) return old.s;
+async function mrFetch(k,d,md){ const ck=mrCK(k,d), old=LS.get(ck,null); if(old&&old.u&&old.u===(d.u||0)) return old.s;
+  if(md){ const s=MR_SUM[k](mrFromMD(k,md,d),d.date); if(d.u) LS.set(ck,{u:d.u,s}); return s; }
   const c=await cfgOf(P[k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:d.date,equip:d.equip||""});
   const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); const s=MR_SUM[k](j,d.date); if(d.u) LS.set(ck,{u:d.u,s}); return s; }
-async function mrDays(k,test,months,prog){ const L=[]; for(const m of months){ try{ (await mrList(k,m)).forEach(d=>{ if(test(d.date)) L.push(d); }); }catch(e){} }
-  const out=[]; let i=0, done=0; await Promise.all(Array.from({length:6},async()=>{ while(i<L.length){ const d=L[i++]; try{ out.push({d,s:await mrFetch(k,d)}); }catch(e){} done++; if(prog) prog(done,L.length); } })); return out; }
+async function mrDays(k,test,months,prog){ const L=[], MDm={}; for(const m of months){ try{ const LL=(await mrList(k,m)).filter(d=>test(d.date)); LL.forEach(d=>L.push(d));
+      const miss=LL.filter(d=>{ const o=LS.get(mrCK(k,d),null); return !(o&&o.u&&o.u===(d.u||0)); }).length; if(miss>=3) MDm[m]=await mrMonthData(k,m); }catch(e){} }
+  const out=[]; let i=0, done=0; await Promise.all(Array.from({length:10},async()=>{ while(i<L.length){ const d=L[i++]; try{ out.push({d,s:await mrFetch(k,d,MDm[d.date.slice(0,7)])}); }catch(e){} done++; if(prog) prog(done,L.length); } })); return out; }
 const mrMonths=(a,b)=>{ const out=[]; let [y,m]=a.split("-").map(Number); const [y2,m2]=b.split("-").map(Number); while(y<y2||(y===y2&&m<=m2)){ out.push(`${y}-${String(m).padStart(2,"0")}`); m++; if(m>12){m=1;y++;} if(out.length>24) break; } return out; };
 // 散布図（1系列）
 function mrScatter(pts,o){ const W=innerWidth<640?420:640,H=230,L=48,R=12,T=12,B=34; if(pts.length<2) return `<div class="subt">点が少ないので図は出しません</div>`;
