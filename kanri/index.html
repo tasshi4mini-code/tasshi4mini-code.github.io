@@ -357,7 +357,11 @@ $("btnReload").onclick=()=>{ if(st.tab==="del"){ loadDel(); return; } if(st.tab=
 const fmtT=u=>{ if(!u) return ""; const x=new Date(u); return `${x.getMonth()+1}/${x.getDate()} ${x.getHours()}:${String(x.getMinutes()).padStart(2,"0")}`; };
 async function listOf(p,month){ const c=await cfgOf(p); if(!c||!c.syncUrl) throw new Error("config.js の syncUrl が未設定");
   const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"list",token:c.token||"",month});
-  const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); return j.days||[]; }
+  const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error");
+  // 溶解日報の一覧には号機（equip）が入っていない → 「溶解」で読む。同じ日が2つあるときは1つにまとめる
+  const M=new Map(); (j.days||[]).forEach(d0=>{ const d=Object.assign({},d0,{equip:d0.equip||(p.k==="yokai"?"溶解":"")}); const k=d.date+"|"+d.equip, o=M.get(k);
+    if(!o) M.set(k,d); else { ["filled","ng","warn","events","melt","pour","stopped","total"].forEach(f=>{ if(d[f]!=null) o[f]=Math.max(+o[f]||0,+d[f]||0); }); o.u=Math.max(+o.u||0,+d.u||0); } });
+  return [...M.values()]; }
 function card(p,res){ const D=res.days, err=res.err;
   let body;
   if(err) body=`<div class="none">⚠ 読み込めませんでした（${esc(err)}）</div>`;
@@ -513,7 +517,7 @@ async function mrLoad(force){ if(MR.busy) return; MR.busy=true; const month=MR.m
     const jobs=[]; keys.forEach(k=>lists[k].forEach(d=>jobs.push({k,d})));
     let done=0; const prog=()=>{ if(month===MR.month) box.innerHTML=`<div class="mrwait">日報を読み込んでいます… ${done} / ${jobs.length}<div class="mrbar"><i style="width:${jobs.length?Math.round(done/jobs.length*100):0}%"></i></div><span class="subt">はじめての月は少し時間がかかります（2回目からは速くなります）</span></div>`; };
     prog(); const res=[];
-    await (async()=>{ let i=0; await Promise.all(Array.from({length:6},async()=>{ while(i<jobs.length){ const x=jobs[i++]; const ck="kanri:mr5:"+x.k+"|"+x.d.date+"|"+(x.d.equip||"");
+    await (async()=>{ let i=0; await Promise.all(Array.from({length:6},async()=>{ while(i<jobs.length){ const x=jobs[i++]; const ck="kanri:mr6:"+x.k+"|"+x.d.date+"|"+(x.d.equip||"");
           const old=LS.get(ck,null); let s=null;
           if(!force&&old&&old.u&&old.u===(x.d.u||0)) s=old.s;
           else { try{ const c=await cfgOf(P[x.k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:x.d.date,equip:x.d.equip||""});
@@ -691,7 +695,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
 // ---- 月次実績の追加分：ほかの月の日報も読む（不良と前工程・模型の使用枚数）----
 const MR_LC={};
 async function mrList(k,m){ const key=k+"|"+m, o=MR_LC[key]; if(o&&Date.now()-o.at<120000) return o.L; const L=(await listOf(P[k],m)).filter(d=>String(d.date).slice(0,7)===m); MR_LC[key]={at:Date.now(),L}; return L; }
-async function mrFetch(k,d){ const ck="kanri:mr5:"+k+"|"+d.date+"|"+(d.equip||""), old=LS.get(ck,null); if(old&&old.u&&old.u===(d.u||0)) return old.s;
+async function mrFetch(k,d){ const ck="kanri:mr6:"+k+"|"+d.date+"|"+(d.equip||""), old=LS.get(ck,null); if(old&&old.u&&old.u===(d.u||0)) return old.s;
   const c=await cfgOf(P[k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:d.date,equip:d.equip||""});
   const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); const s=MR_SUM[k](j,d.date); if(d.u) LS.set(ck,{u:d.u,s}); return s; }
 async function mrDays(k,test,months,prog){ const L=[]; for(const m of months){ try{ (await mrList(k,m)).forEach(d=>{ if(test(d.date)) L.push(d); }); }catch(e){} }
