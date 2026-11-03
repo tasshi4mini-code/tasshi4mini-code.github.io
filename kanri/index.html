@@ -77,7 +77,7 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 .chk li .cp{flex:0 0 auto;color:#5d6778;font-size:12px;min-width:120px}
 .chk .more{margin-top:6px;min-height:40px;border-radius:8px;border:1px solid #90a4ae;background:#fff;font-weight:bold;cursor:pointer;padding:0 12px}
 /* 月次実績（ロイヤルブルー基調） */
-#monPage{flex:1 1 auto;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;font-family:"Meiryo","メイリオ",sans-serif}
+#monPage{position:relative;flex:1 1 auto;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;font-family:"Meiryo","メイリオ",sans-serif}
 #monPage[hidden]{display:none}
 .mwrap{max-width:1200px;margin:0 auto}
 .mrhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;background:#fff;border-top:6px solid #4169e1;border-radius:12px;padding:12px 16px;margin-bottom:12px}
@@ -94,16 +94,22 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 .mrsec h3{margin:0 0 10px;font-size:18px;color:#fff;background:#4169e1;border-radius:8px;padding:6px 12px}
 .mrg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:14px}
 .mrg2>div{min-width:0;overflow-x:auto}
-.mrt{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px}
+.mrt{width:100%;border-collapse:collapse;font-size:15px;margin-bottom:6px}
 .mrt th{background:#e3e9fb;color:#1a3a9c;font-weight:bold;padding:6px 8px;border:1px solid #c5d1f3;text-align:center;white-space:nowrap}
 .mrt td{padding:5px 8px;border:1px solid #dde3f3;text-align:right;font-variant-numeric:tabular-nums}
 .mrt td:first-child{text-align:left}.mrt tr.tot td{font-weight:bold;background:#f3f6fd}
 .mrev td{text-align:left;font-size:13px}
+.mrhm td{text-align:center}.mrhm td.hm{font-weight:bold}.mrhm td.hm0{color:#b0b8c4}
 .mrscroll{overflow-x:auto}.mrday td{white-space:nowrap}
 .mrhb{height:6px;background:#e3e9fb;border-radius:999px;margin-top:3px;overflow:hidden}.mrhb i{display:block;height:100%;background:#4169e1;border-radius:999px}
-.mrcap{font-size:13px;font-weight:bold;color:#1a3a9c;margin:10px 0 2px}
+.mrnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;position:sticky;top:0;z-index:2;background:#eceff1;padding:6px 0}
+.mrnav a{padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #9db0e8;color:#1a3a9c;font-weight:bold;font-size:14px;text-decoration:none}
+.mrnav a:hover{background:#e3e9fb}
+.mrcap{font-size:14px!important;font-size:13px;font-weight:bold;color:#1a3a9c;margin:10px 0 2px}
 .mchart{width:100%;height:auto;display:block}
-.mchart .mg{stroke:#e3e7ef;stroke-width:1}.mchart .mt{font-size:11px;fill:#5d6778}
+.mchart .mg{stroke:#e3e7ef;stroke-width:1}.mchart .mt{font-size:12px;fill:#5d6778}
+.mchart .mv{font-size:11.5px;fill:#1c2333;font-weight:600;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round}.mchart .mv.mvx{font-weight:800;fill:#1a3a9c}
+.mchart .mrefl{fill:#3c4656;font-weight:600}
 .mchart .ml{fill:none;stroke:#4169e1;stroke-width:2;stroke-linejoin:round}.mchart .mp{fill:#4169e1;stroke:#fff;stroke-width:2}
 .mchart .mb{fill:#4169e1}.mchart .mh:hover .mb{fill:#2a4fc4}.mchart .mh:hover .mp{r:6}
 .mchart .mref{stroke:#5d6778;stroke-width:1;stroke-dasharray:4 4}
@@ -113,7 +119,7 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 @media print{
   body.pmon #qrPage{display:none!important}
   body.pmon #monPage{display:block!important;overflow:visible;padding:0}
-  body.pmon .mrctl{display:none!important}
+  body.pmon .mrctl,body.pmon .mrnav{display:none!important}
   body.pmon .mrsec,body.pmon .mtile,body.pmon .mrhead{border-color:#9db0e8}
   body.pmon .mrsec h3{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body.pmon .mrt th,body.pmon .mrbar i,body.pmon .mchart{-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -505,7 +511,7 @@ const MR_SUM={
       const L=r.lot2?[[r.lot1||r.lot,mrNum(r.t1)||0,r.d1||{}],[r.lot2,mrNum(r.t2)||0,r.d2||{}]]:[[r.lot1||r.lot,t,r.d||{}]];
       L.forEach(([l,q,dd])=>{ const ld=lotD(l); if(!ld) return; const o=lots[ld]||(lots[ld]={t:0,ng:0,df:{}}); o.t+=q; MR_DEF.forEach(([k])=>{ const v=mrNum(dd[k])||0; if(v){ o.ng+=v; o.df[k]=(o.df[k]||0)+v; } }); });
       MR_DEF.forEach(([k])=>{ const v=mrNum((r.d||{})[k])||0; if(v){ df[k]=(df[k]||0)+v; n+=v; } }); tot+=t; ng+=n;
-      const h=hin[r.hin]||(hin[r.hin]={n:r.name||"",t:0,ng:0}); h.t+=t; h.ng+=n; });
+      const h=hin[r.hin]||(hin[r.hin]={n:r.name||"",t:0,ng:0,df:{}}); h.t+=t; h.ng+=n; MR_DEF.forEach(([k])=>{ const v=mrNum((r.d||{})[k])||0; if(v) h.df[k]=(h.df[k]||0)+v; }); });
     return {tot,ng,df,hin,lots,w:[String(d&&0||"")].filter(Boolean),span:mrSpan(ts),ev:mrEvents(mrItemsEv(j),d,"検査")}; },
   shot(j,d){ const wk=[], ts=[]; let n=0; (j.items||[]).filter(it=>it.type==="row").sort((a,b)=>(+a.ref)-(+b.ref)).forEach(it=>{ const r=it.raw||{}; if(!r.hin) return; n++; if(r.worker) wk.push(r.worker); ts.push(mrMin(r.st)); });
     return {n,w:mrW(wk),span:mrSpan(ts),ev:mrEvents(mrItemsEv(j),d,"ショット")}; }
@@ -517,7 +523,7 @@ async function mrLoad(force){ if(MR.busy) return; MR.busy=true; const month=MR.m
     const jobs=[]; keys.forEach(k=>lists[k].forEach(d=>jobs.push({k,d})));
     let done=0; const prog=()=>{ if(month===MR.month) box.innerHTML=`<div class="mrwait">日報を読み込んでいます… ${done} / ${jobs.length}<div class="mrbar"><i style="width:${jobs.length?Math.round(done/jobs.length*100):0}%"></i></div><span class="subt">はじめての月は少し時間がかかります（2回目からは速くなります）</span></div>`; };
     prog(); const res=[];
-    await (async()=>{ let i=0; await Promise.all(Array.from({length:6},async()=>{ while(i<jobs.length){ const x=jobs[i++]; const ck="kanri:mr6:"+x.k+"|"+x.d.date+"|"+(x.d.equip||"");
+    await (async()=>{ let i=0; await Promise.all(Array.from({length:6},async()=>{ while(i<jobs.length){ const x=jobs[i++]; const ck="kanri:mr7:"+x.k+"|"+x.d.date+"|"+(x.d.equip||"");
           const old=LS.get(ck,null); let s=null;
           if(!force&&old&&old.u&&old.u===(x.d.u||0)) s=old.s;
           else { try{ const c=await cfgOf(P[x.k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:x.d.date,equip:x.d.equip||""});
@@ -531,18 +537,24 @@ async function mrLoad(force){ if(MR.busy) return; MR.busy=true; const month=MR.m
   catch(e){ box.innerHTML=`<div class="mrwait" style="color:#b00020">読み込めませんでした（${esc(e.message||e)}）</div>`; }
   MR.busy=false; }
 // ---- グラフ（1系列・ロイヤルブルー。点にカーソル／タップで値）----
-function mrChart(pts,o){ const W=innerWidth<640?420:900,H=innerWidth<640?230:210,L=46,R=12,T=14,B=30, v=pts.filter(p=>p.y!=null); if(!v.length) return `<div class="subt">データがありません</div>`;
-  let lo=o.min!=null?o.min:Math.min(...v.map(p=>p.y)), hi=Math.max(...v.map(p=>p.y)); if(o.bar) lo=0; if(hi===lo){ hi+=1; lo=o.bar?0:lo-1; } const pad=(hi-lo)*0.1; if(!o.bar){ lo-=pad; } hi+=pad;
-  const X=o.bar?(i=>L+(i+0.5)*(W-L-R)/pts.length):(i=>L+(pts.length<=1?(W-L-R)/2:i*(W-L-R)/(pts.length-1))), Y=y=>T+(H-T-B)*(1-(y-lo)/(hi-lo)), f=n=>(o.fmt||(x=>x.toFixed(1)))(n);
-  if(o.bar&&o.int){ hi=Math.max(3,Math.ceil(hi/3)*3); }
-  let g="", seen={}; for(let k=0;k<=3;k++){ const yv=lo+(hi-lo)*k/3, yy=Y(yv), lb=f(yv); if(seen[lb]) continue; seen[lb]=1; g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" class="mg"/><text x="${L-6}" y="${yy+4}" class="mt" text-anchor="end">${f(yv)}</text>`; }
-  pts.forEach((p,i)=>{ if(i%Math.ceil(pts.length/(W<500?7:16))===0) g+=`<text x="${X(i)}" y="${H-10}" class="mt" text-anchor="middle">${esc(p.x)}</text>`; });
+function mrChart(pts,o){ const mob=innerWidth<640, W=mob?420:900, H=mob?250:240, L=44, R=10, T=26, B=28, v=pts.filter(p=>p.y!=null);
+  if(!v.length) return `<div class="subt">データがありません</div>`;
+  let lo=o.min!=null?o.min:Math.min(...v.map(p=>p.y)), hi=Math.max(...v.map(p=>p.y)); if(o.bar) lo=0; if(hi===lo){ hi+=1; lo=o.bar?0:lo-1; }
+  const pad=(hi-lo)*0.12; if(!o.bar) lo-=pad; hi+=pad; if(o.bar&&o.int) hi=Math.max(3,Math.ceil(hi/3)*3);
+  const n=pts.length, bw0=(W-L-R)/n, X=i=>L+(i+0.5)*bw0, Y=y=>T+(H-T-B)*(1-(y-lo)/(hi-lo)), f=x=>(o.fmt||(z=>z.toFixed(1)))(x);
+  let g="", seen={}; for(let k=0;k<=3;k++){ const yv=lo+(hi-lo)*k/3, yy=Y(yv), lb=f(yv); if(seen[lb]) continue; seen[lb]=1; g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" class="mg"/><text x="${L-6}" y="${yy+4}" class="mt" text-anchor="end">${lb}</text>`; }
+  const step=Math.max(1,Math.ceil(n/(mob?8:16))); pts.forEach((p,i)=>{ if(i%step===0||i===n-1) g+=`<text x="${X(i)}" y="${H-8}" class="mt" text-anchor="middle">${esc(p.x)}</text>`; });
+  // 値のラベル：点・棒の上に出す（間がせまいときは1つおき。最大・最小・最後は必ず出す）
+  const ys=v.map(p=>p.y), mx=Math.max(...ys), mn=Math.min(...ys), lab=[]; const lw=f(mx).length*6.4+4, every=bw0<lw?Math.ceil(lw/bw0):1; let li=0, last=-1;
+  pts.forEach((p,i)=>{ if(p.y==null) return; const must=p.y===mx||p.y===mn||i===pts.map(q=>q.y!=null).lastIndexOf(true); if(must||(li++%every===0&&i-last>=every)){ lab.push(i); last=i; } });
   let m="";
-  if(o.bar){ const bw=Math.max(3,Math.min(18,(W-L-R)/pts.length*0.6)); pts.forEach((p,i)=>{ if(p.y==null) return; const y0=Y(0), y1=Y(p.y), h=Math.max(1,y0-y1);
-      m+=`<g class="mh"><rect x="${X(i)-bw/2}" y="${y1}" width="${bw}" height="${h}" rx="3" class="mb"/><rect x="${X(i)-bw/2-3}" y="${T}" width="${bw+6}" height="${H-T-B}" fill="transparent"/><title>${esc(p.x)}：${f(p.y)}${o.unit||""}</title></g>`; }); }
-  else { let d="", started=false; pts.forEach((p,i)=>{ if(p.y==null){ started=false; return; } d+=(started?"L":"M")+X(i)+" "+Y(p.y)+" "; started=true; }); m+=`<path d="${d}" class="ml"/>`;
+  if(o.bar){ const bw=Math.max(3,Math.min(22,bw0*0.62)); pts.forEach((p,i)=>{ if(p.y==null) return; const y0=Y(0), y1=Y(p.y), h=Math.max(1,y0-y1);
+      m+=`<g class="mh"><rect x="${X(i)-bw/2}" y="${y1}" width="${bw}" height="${h}" rx="3" class="mb"/><rect x="${X(i)-bw0/2}" y="${T}" width="${bw0}" height="${H-T-B}" fill="transparent"/><title>${esc(p.x)}：${f(p.y)}${o.unit||""}</title></g>`; }); }
+  else { let d="", st=false; pts.forEach((p,i)=>{ if(p.y==null){ st=false; return; } d+=(st?"L":"M")+X(i).toFixed(1)+" "+Y(p.y).toFixed(1)+" "; st=true; }); m+=`<path d="${d}" class="ml"/>`;
     pts.forEach((p,i)=>{ if(p.y==null) return; m+=`<g class="mh"><circle cx="${X(i)}" cy="${Y(p.y)}" r="12" fill="transparent"/><circle cx="${X(i)}" cy="${Y(p.y)}" r="4" class="mp"/><title>${esc(p.x)}：${f(p.y)}${o.unit||""}</title></g>`; }); }
-  if(o.ref!=null&&o.ref>lo&&o.ref<hi) m+=`<line x1="${L}" x2="${W-R}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" class="mref"/><text x="${W-R}" y="${Y(o.ref)-4}" class="mt" text-anchor="end">${esc(o.refLabel||"")}</text>`;
+  if(o.ref!=null&&o.ref>lo&&o.ref<hi) m+=`<line x1="${L}" x2="${W-R}" y1="${Y(o.ref)}" y2="${Y(o.ref)}" class="mref"/><text x="${W-R}" y="${Y(o.ref)-5}" class="mt mrefl" text-anchor="end">${esc(o.refLabel||"")}</text>`;
+  lab.forEach(i=>{ const p=pts[i], y=Y(p.y); let ty=y-(o.bar?5:9); if(!o.bar){ const pv=pts[i-1]&&pts[i-1].y, nx=pts[i+1]&&pts[i+1].y; if(pv!=null&&nx!=null&&p.y<pv&&p.y<nx&&y+18<H-B) ty=y+18; }
+    m+=`<text x="${X(i)}" y="${Math.max(11,ty)}" class="mv${p.y===mx||p.y===mn?" mvx":""}" text-anchor="middle">${f(p.y)}</text>`; });
   return `<svg class="mchart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.title||"")}">${g}${m}</svg>`; }
 function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {month,lists,res,errs}=D;
   const [yy,mm]=month.split("-").map(Number), nd=new Date(yy,mm,0).getDate(), days=Array.from({length:nd},(_,i)=>`${month}-${String(i+1).padStart(2,"0")}`);
@@ -575,7 +587,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   const S=by("suna"), sAvg=k=>{ let a=0,n=0; S.forEach(x=>{ a+=x.s.s[k][0]; n+=x.s.s[k][1]; }); return n?a/n:null; }, sBatch=S.reduce((a,x)=>a+(x.s.batch||0),0);
   // 注湯・検査・ショット
   const C=by("chuto"), cch=C.reduce((a,x)=>a+x.s.ch,0), cn=C.reduce((a,x)=>a+x.s.n,0), cng=C.reduce((a,x)=>a+x.s.ng,0), cts=C.reduce((a,x)=>a+x.s.ts,0), ctc=C.reduce((a,x)=>a+x.s.tc,0);
-  const K=by("kensa"), kdf={}, khin={}; K.forEach(x=>{ Object.entries(x.s.df||{}).forEach(([k,v])=>kdf[k]=(kdf[k]||0)+v); Object.entries(x.s.hin||{}).forEach(([h,v])=>{ const o=khin[h]||(khin[h]={n:v.n,t:0,ng:0}); o.t+=v.t; o.ng+=v.ng; }); });
+  const K=by("kensa"), kdf={}, khin={}; K.forEach(x=>{ Object.entries(x.s.df||{}).forEach(([k,v])=>kdf[k]=(kdf[k]||0)+v); Object.entries(x.s.hin||{}).forEach(([h,v])=>{ const o=khin[h]||(khin[h]={n:v.n,t:0,ng:0,df:{}}); o.t+=v.t; o.ng+=v.ng; Object.entries(v.df||{}).forEach(([k,c])=>o.df[k]=(o.df[k]||0)+c); }); });
   const crw=C.flatMap(x=>x.s.rw||[]), cMat={}, BANDS=[["7〜12時",420,720],["12〜17時",720,1020],["17〜22時",1020,1320],["22〜7時",1320,420]], cBand=BANDS.map(()=>[0,0]); let cFirst=[0,0];
   crw.forEach(([m,t,g,f])=>{ const o=cMat[m]||(cMat[m]=[0,0]); o[0]+=g; o[1]++; if(t!=null){ BANDS.forEach(([,a,b],i)=>{ if(a<b?(t>=a&&t<b):(t>=a||t<b)){ cBand[i][0]+=g; cBand[i][1]++; } }); } if(f){ cFirst[0]+=g; cFirst[1]++; } });
   const pct=(a,b)=>b?(a/b*100).toFixed(1)+" %":"－";
@@ -589,6 +601,9 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
     const yk=yc.filter(c=>c.kwh!=null&&c.kg>0), ykw=yk.reduce((a,c)=>a+c.kwh,0), ykk=yk.reduce((a,c)=>a+c.kg,0);
     return {d,kwh:yk.length?ykw:null,kpt:ykk>0?ykw/(ykk/1000):null,ych:yc.length,ykg:ykg1,ymn:ym.length?ym.reduce((a,c)=>a+c.mn,0)/ym.length:null,zfr:zf,zkg:zk,yl:ykg1>0&&zk>0?zk/ykg1*100:null,moist:sv("moist"),cb:sv("cb"),h:sv("h"),
       batch:ss.reduce((a,x)=>a+(x.s.batch||0),0)||null,cch:C.filter(x=>x.d.date===d).reduce((a,x)=>a+x.s.ch,0),ev:ev.filter(e=>e.d===d).length}; });
+  // グラフは入力のあった最初の日〜最後の日だけを出す（前後の空白をなくして見やすく）
+  const act=x=>x.ych||x.zfr||x.cch||x.moist!=null||x.ev||x.kpt!=null; let a0=day.findIndex(act), a1=day.length-1-[...day].reverse().findIndex(act); if(a0<0){ a0=0; a1=day.length-1; }
+  const dayC=day.slice(a0,a1+1);
   const ydays=day.filter(x=>x.ych).length; const work=day.filter(x=>x.ych||x.zfr||x.cch).length, yl=ykg>0&&zkg>0?zkg/ykg*100:null;
   const tile=(l,v,s)=>`<div class="mtile"><div class="ml1">${l}</div><div class="mv">${v}</div><div class="ml2">${s||""}</div></div>`;
   let h=`<div class="mrhead"><div><div class="mrtitle">鋳造課 月次実績報告　${yy}年${mm}月</div><div class="subt">各工程の日報（スプレッドシート）から集計　作成 ${fmtT(Date.now())}</div></div><img class="mrlogo" src="data:image/png;base64,${MR_LOGO}" alt="シャインテック"></div>`;
@@ -607,13 +622,13 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
     `<div><table class="mrt"><thead><tr><th>原材料</th><th>使用量 (kg)</th><th>1チャージ平均 (kg)</th></tr></thead><tbody>`+
     MR_MIX.filter(([k])=>mix[k]).map(([k,l])=>`<tr><td>${l}</td><td>${f0(mix[k])}</td><td>${ych.length?f1(mix[k]/ych.length):"－"}</td></tr>`).join("")+
     `<tr class="tot"><td>合計</td><td>${f0(ykg)}</td><td>${ych.length?f1(ykg/ych.length):"－"}</td></tr></tbody></table></div></div>`+
-    `<div class="mrcap">日ごとのチャージ数</div>${mrChart(day.map(x=>({x:md(x.d),y:x.ych||null})),{bar:true,int:true,unit:" ch",fmt:n=>String(Math.round(n)),title:"日ごとのチャージ数"})}`+
-    `<div class="mrcap">日ごとの平均溶解時間（分）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.ymn})),{unit:" 分",fmt:n=>String(Math.round(n)),title:"平均溶解時間"})}`+
+    `<div class="mrcap">日ごとのチャージ数</div>${mrChart(dayC.map(x=>({x:md(x.d),y:x.ych||null})),{bar:true,int:true,unit:" ch",fmt:n=>String(Math.round(n)),title:"日ごとのチャージ数"})}`+
+    `<div class="mrcap">日ごとの平均溶解時間（分）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:x.ymn})),{unit:" 分",fmt:n=>String(Math.round(n)),title:"平均溶解時間"})}`+
     `<div class="mrcap">電力量（盤の「只今の電力量」の差から計算）　電力単価 <input id="mrPrice" type="number" step="0.1" min="0" value="${price||""}" placeholder="円/kWh" style="width:90px;min-height:32px;border:1px solid #9db0e8;border-radius:6px;padding:0 6px"> 円/kWh</div>`+
     (kw.length?`<table class="mrt"><thead><tr><th>材質</th><th>チャージ</th><th>電力量 (kWh)</th><th>1トンあたり (kWh/t)</th><th>1チャージ平均 (kWh)</th><th>1分あたり (kWh)</th>${price?"<th>電力費 (円)</th><th>1トンあたり (円/t)</th>":""}</tr></thead><tbody>`+
       Object.entries(kwMat).sort((a,b)=>b[1].n-a[1].n).map(([m,o])=>`<tr><td>${esc(m)}</td><td>${o.n}</td><td>${f0(o.u)}</td><td>${f0(o.u/(o.kg/1000))}</td><td>${f0(o.u/o.n)}</td><td>${o.mc?f1(o.u/o.n/(o.mn/o.mc)):"－"}</td>${price?`<td>${f0(o.u*price)}</td><td>${f0(o.u/(o.kg/1000)*price)}</td>`:""}</tr>`).join("")+
       `<tr class="tot"><td>合計</td><td>${kw.length}</td><td>${f0(kwU)}</td><td>${f0(kwPt)}</td><td>${f0(kwU/kw.length)}</td><td></td>${price?`<td>${f0(kwU*price)}</td><td>${f0(kwPt*price)}</td>`:""}</tr></tbody></table>`+
-      `<div class="mrcap">日ごとの電力量（kWh/t）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.kpt})),{unit:" kWh/t",fmt:n=>String(Math.round(n)),title:"電力量 kWh/t",ref:kwPt,refLabel:kwPt!=null?`月平均 ${f0(kwPt)}`:""})}`
+      `<div class="mrcap">日ごとの電力量（kWh/t）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:x.kpt})),{unit:" kWh/t",fmt:n=>String(Math.round(n)),title:"電力量 kWh/t",ref:kwPt,refLabel:kwPt!=null?`月平均 ${f0(kwPt)}`:""})}`
      :`<div class="subt">溶解日報に電力量の入力がありません（溶解日報 v23 から入力できます）</div>`)+
     `<div class="mrg2"><div><div class="mrcap">成分・出湯温度の規格外（溶解日報の規格で判定）</div><table class="mrt"><thead><tr><th>材質</th><th>判定したチャージ</th><th>NG</th><th>NG率</th><th>C 規格外</th><th>Si 規格外</th><th>出湯温度 規格外</th><th>CE 平均</th></tr></thead><tbody>`+
       mOrd.map(([m])=>{ const o=cmp[m]; return `<tr><td>${esc(m)}</td><td>${o.any}</td><td>${o.ng}</td><td>${pct(o.ng,o.any)}</td><td>${o.c[1]?o.c[0]+" / "+o.c[1]:"－"}</td><td>${o.si[1]?o.si[0]+" / "+o.si[1]:"－"}</td><td>${o.t[1]?o.t[0]+" / "+o.t[1]:"－"}</td><td>${o.ce[1]?(o.ce[0]/o.ce[1]).toFixed(2):"－"}</td></tr>`; }).join("")+
@@ -626,9 +641,9 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   // 砂処理
   h+=`<section class="mrsec"><h3>砂処理</h3><table class="mrt"><thead><tr><th>バッチ数</th><th>測定回数</th><th>水分 平均 (%)</th><th>CB 平均 (%)</th><th>鋳型硬度 平均</th><th>外気温 平均 (℃)</th><th>湿度 平均 (%)</th><th>規格外</th></tr></thead><tbody><tr>`+
     `<td>${sBatch?f0(sBatch):"－"}</td><td>${S.reduce((a,x)=>a+x.s.n,0)}</td>`+["moist","cb","h","temp","humid"].map(k=>{ const v=sAvg(k); return `<td>${v==null?"－":(k==="h"?v.toFixed(2):f1(v))}</td>`; }).join("")+`<td>${lsum("suna","ng")} 件</td></tr></tbody></table>`+
-    `<div class="mrcap">水分（日平均 %）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.moist})),{unit:" %",fmt:n=>n.toFixed(2),title:"水分"})}`+
-    `<div class="mrcap">CB（日平均 %）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.cb})),{unit:" %",fmt:n=>n.toFixed(1),title:"CB"})}`+
-    `<div class="mrcap">鋳型硬度（日平均 kg/cm²）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.h})),{fmt:n=>n.toFixed(1),title:"鋳型硬度"})}`+
+    `<div class="mrcap">水分（日平均 %）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:x.moist})),{unit:" %",fmt:n=>n.toFixed(2),title:"水分"})}`+
+    `<div class="mrcap">CB（日平均 %）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:x.cb})),{unit:" %",fmt:n=>n.toFixed(1),title:"CB"})}`+
+    `<div class="mrcap">鋳型硬度（日平均 kg/cm²）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:x.h})),{fmt:n=>n.toFixed(1),title:"鋳型硬度"})}`+
     `<div class="mrcap">規格外の項目別回数（規格：水分 3.0〜4.0%・CB 30〜40%・鋳型硬度 13〜21／狙い：水分 3.1〜3.5%・CB 33〜37%・鋳型硬度 17〜19）</div><table class="mrt"><thead><tr><th>項目</th><th>測定回数</th><th>規格外</th><th>規格外の割合</th><th>狙い外（規格内）</th></tr></thead><tbody>`+
     [["moist","水分"],["cb","CB"],["hard","鋳型硬度"]].map(([k,l])=>{ const nr=S.reduce((a,x)=>a+((x.s.nr||{})[k]||0),0), g=S.reduce((a,x)=>a+((x.s.ng||{})[k]||0),0), w=S.reduce((a,x)=>a+((x.s.wn||{})[k]||0),0);
       return `<tr><td>${l}</td><td>${nr}</td><td>${g}</td><td>${pct(g,nr)}</td><td>${w}</td></tr>`; }).join("")+`</tbody></table></section>`;
@@ -642,7 +657,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
     `<div><table class="mrt"><thead><tr><th>品番（重量の多い順）</th><th>個数</th><th>重量 (t)</th></tr></thead><tbody>`+
     Object.entries(hin).sort((a,b)=>b[1].kg-a[1].kg).slice(0,12).map(([k,v])=>`<tr><td>${esc(k)}${v.n?` <span class="subt">${esc(v.n)}</span>`:""}</td><td>${f0(v.q)}</td><td>${t1(v.kg)}</td></tr>`).join("")+
     `</tbody></table>${Object.keys(hin).length>12?`<div class="subt">ほか ${Object.keys(hin).length-12} 品番</div>`:""}</div></div>`+
-    `<div class="mrcap">日ごとの製品歩留まり（%）</div>${mrChart(day.map(x=>({x:md(x.d),y:x.yl})),{unit:" %",fmt:n=>n.toFixed(1),title:"製品歩留まり",ref:yl,refLabel:yl!=null?`月平均 ${f1(yl)}%`:""})}</section>`;
+    `<div class="mrcap">日ごとの製品歩留まり（%）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:x.yl})),{unit:" %",fmt:n=>n.toFixed(1),title:"製品歩留まり",ref:yl,refLabel:yl!=null?`月平均 ${f1(yl)}%`:""})}</section>`;
   // 注湯・検査・ショット
   h+=`<section class="mrsec"><h3>注湯・検査・ショット</h3><table class="mrt"><thead><tr><th>工程</th><th>実績</th><th>規格外・不良</th></tr></thead><tbody>`+
     `<tr><td>注湯</td><td>${cch} チャージ ／ 測定 ${cn} 回 ／ 平均受湯温度 ${ctc?f0(cts/ctc)+" ℃":"－"}</td><td>温度の規格外 ${cng} 回${cn?`（${f1(cng/cn*100)}%）`:""}</td></tr>`+
@@ -659,8 +674,15 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   h+=`<section class="mrsec"><h3>検査 不良 TOP5</h3><div class="mrg2"><div><div class="mrcap">不良の種類</div>`+(dTop.length?`<table class="mrt"><thead><tr><th>順位</th><th>不良</th><th>個数</th><th>不良に占める割合</th><th>不良率（対 検査数）</th></tr></thead><tbody>`+
       dTop.slice(0,5).map(([l,v],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${esc(l)}<div class="mrhb"><i style="width:${Math.round(v/dMax*100)}%"></i></div></td><td>${f0(v)}</td><td>${kNg?f1(v/kNg*100)+" %":"－"}</td><td>${kTot?(v/kTot*100).toFixed(2)+" %":"－"}</td></tr>`).join("")+
       `<tr class="tot"><td></td><td style="text-align:left">不良 合計</td><td>${f0(kNg)}</td><td>100 %</td><td>${kTot?(kNg/kTot*100).toFixed(2)+" %":"－"}</td></tr></tbody></table>${dTop.length>5?`<div class="subt">ほか：${dTop.slice(5).map(([l,v])=>esc(l)+" "+f0(v)).join("、")}</div>`:""}`:`<div class="subt">不良の記録はありません</div>`)+
-    `</div><div><div class="mrcap">不良の多い品番</div>`+(hTop.length?`<table class="mrt"><thead><tr><th>順位</th><th>品番</th><th>不良</th><th>検査数</th><th>不良率</th></tr></thead><tbody>`+
-      hTop.slice(0,5).map(([k,v],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${esc(k)}${v.n?` <span class="subt">${esc(v.n)}</span>`:""}</td><td>${f0(v.ng)}</td><td>${f0(v.t)}</td><td>${v.t?(v.ng/v.t*100).toFixed(2)+" %":"－"}</td></tr>`).join("")+`</tbody></table>`:`<div class="subt">不良の記録はありません</div>`)+`</div></div></section>`;
+    `</div><div><div class="mrcap">不良の多い品番</div>`+(hTop.length?`<table class="mrt"><thead><tr><th>順位</th><th>品番</th><th>不良</th><th>検査数</th><th>不良率</th><th>いちばん多い不良</th></tr></thead><tbody>`+
+      hTop.slice(0,5).map(([k,v],i)=>{ const t1=MR_DEF.map(([dk,dl])=>[dl,(v.df||{})[dk]||0]).sort((a,b)=>b[1]-a[1])[0]||["",0];
+        return `<tr><td>${i+1}</td><td style="text-align:left">${esc(k)}${v.n?` <span class="subt">${esc(v.n)}</span>`:""}</td><td>${f0(v.ng)}</td><td>${f0(v.t)}</td><td>${v.t?(v.ng/v.t*100).toFixed(2)+" %":"－"}</td><td style="text-align:left">${t1[1]?`<b>${esc(t1[0])}</b> ${f0(t1[1])}（${f0(t1[1]/v.ng*100)}%）`:"－"}</td></tr>`; }).join("")+`</tbody></table>`:`<div class="subt">不良の記録はありません</div>`)+`</div></div>`+
+    // 品番 × 不良の種類（不良の多い品番 TOP5）。色が濃いほど多い
+    (hTop.length?(()=>{ const H5=hTop.slice(0,5), cols=MR_DEF.filter(([k])=>H5.some(([,v])=>(v.df||{})[k])).sort((a,b)=>H5.reduce((x,[,v])=>x+((v.df||{})[b[0]]||0),0)-H5.reduce((x,[,v])=>x+((v.df||{})[a[0]]||0),0));
+        const C=cols.slice(0,7), rest=cols.slice(7), mx=Math.max(1,...H5.flatMap(([,v])=>C.map(([k])=>(v.df||{})[k]||0)));
+        const cell=n=>{ if(!n) return `<td class="hm0">－</td>`; const a=n/mx; return `<td class="hm" style="background:rgba(65,105,225,${(0.1+a*0.75).toFixed(2)});color:${a>0.55?"#fff":"#1c2333"}">${f0(n)}</td>`; };
+        return `<div class="mrcap" style="margin-top:12px">不良の多い品番 × 不良の種類（個数。色が濃いほど多い）</div><div class="mrscroll"><table class="mrt mrhm"><thead><tr><th>品番</th>${C.map(([,l])=>`<th>${esc(l)}</th>`).join("")}${rest.length?"<th>その他</th>":""}<th>合計</th></tr></thead><tbody>`+
+          H5.map(([k,v])=>`<tr><td style="text-align:left;white-space:nowrap">${esc(k)}</td>${C.map(([dk])=>cell((v.df||{})[dk]||0)).join("")}${rest.length?`<td>${f0(rest.reduce((a,[dk])=>a+((v.df||{})[dk]||0),0))||"－"}</td>`:""}<td><b>${f0(v.ng)}</b></td></tr>`).join("")+`</tbody></table></div>`; })():"")+`</section>`;
   // 異常報告
   h+=`<section class="mrsec"><h3>異常・変化点の報告</h3><table class="mrt"><thead><tr>${PN.map(p=>`<th>${p}</th>`).join("")}<th>4M変化点管理表</th><th>合計</th></tr></thead><tbody><tr>`+
     PN.map(p=>`<td>${evc[p]||0}</td>`).join("")+`<td>${hkN}${hkNg?`<div class="subt">処置まだ ${hkNg}</div>`:""}</td><td><b>${ev.length+hkN}</b></td></tr></tbody></table>`+
@@ -670,7 +692,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   const STOPN={kosho:"設備故障",chuto:"注湯待ち",suna:"砂待ち",hoshu:"溶解炉補修",noro:"ノロ取り",seibun:"成分待ち","":"理由なし"};
   const stp=Y.flatMap(x=>(x.s.stops||[]).map(o=>Object.assign({d:x.d.date},o))), stT=stp.reduce((a,o)=>a+(o.m||0),0), stR={};
   stp.forEach(o=>{ const k=o.r||""; const a=stR[k]||(stR[k]={n:0,m:0}); a.n++; a.m+=o.m||0; });
-  const stDay=days.map(d=>({x:md(d),y:stp.filter(o=>o.d===d).reduce((a,o)=>a+(o.m||0),0)||null}));
+  const stDay=dayC.map(x=>x.d).map(d=>({x:md(d),y:stp.filter(o=>o.d===d).reduce((a,o)=>a+(o.m||0),0)||null}));
   h+=`<section class="mrsec"><h3>停止・待ち時間（溶解）</h3>`+(stp.length?`<div class="mrg2"><div><table class="mrt"><thead><tr><th>理由</th><th>回数</th><th>時間 (分)</th><th>割合</th><th>1回平均</th></tr></thead><tbody>`+
       Object.entries(stR).sort((a,b)=>b[1].m-a[1].m).map(([k,a])=>`<tr><td style="text-align:left">${esc(STOPN[k]||k)}<div class="mrhb"><i style="width:${stT?Math.round(a.m/stT*100):0}%"></i></div></td><td>${a.n}</td><td>${f0(a.m)}</td><td>${stT?f1(a.m/stT*100)+" %":"－"}</td><td>${a.n?f0(a.m/a.n)+" 分":"－"}</td></tr>`).join("")+
       `<tr class="tot"><td>合計</td><td>${stp.length}</td><td>${f0(stT)}</td><td>100 %</td><td></td></tr></tbody></table><div class="subt">1日平均 ${ydays?f0(stT/ydays):"－"} 分（溶解した日）。</div></div>`+
@@ -691,11 +713,16 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   h+=`<section class="mrsec"><h3>日ごとの実績</h3><div class="mrscroll"><table class="mrt mrday"><thead><tr><th>日付</th><th>溶解 ch</th><th>出湯量 t</th><th>平均溶解時間</th><th>電力量 kWh/t</th><th>造型枠数</th><th>製品重量 t</th><th>歩留まり %</th><th>注湯 ch</th><th>バッチ数</th><th>水分 %</th><th>CB %</th><th>異常・変化点</th></tr></thead><tbody>`+
     day.filter(x=>x.ych||x.zfr||x.cch||x.moist!=null||x.ev).map(x=>`<tr><td>${md(x.d)}（${"日月火水木金土"[new Date(x.d+"T00:00:00").getDay()]}）</td><td>${x.ych||""}</td><td>${x.ykg?t1(x.ykg):""}</td><td>${x.ymn!=null?f0(x.ymn)+" 分":""}</td><td>${x.kpt!=null?f0(x.kpt):""}</td><td>${x.zfr?f0(x.zfr):""}</td><td>${x.zkg?t1(x.zkg):""}</td><td>${x.yl!=null?f1(x.yl):""}</td><td>${x.cch||""}</td><td>${x.batch?f0(x.batch):""}</td><td>${x.moist!=null?x.moist.toFixed(2):""}</td><td>${x.cb!=null?f1(x.cb):""}</td><td>${x.ev||""}</td></tr>`).join("")+
     `</tbody></table></div></section>`;
-  box.innerHTML=h; setTimeout(()=>{ mrLink().catch(e=>{ const b=$("mrLink"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); mrMold().catch(e=>{ const b=$("mrMold"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); },0); const pi=$("mrPrice"); if(pi) pi.onchange=()=>{ LS.set("kanri:kwhPrice",+pi.value||0); mrRender(); }; }
+  box.innerHTML=h;
+  { const secs=[...box.querySelectorAll(".mrsec")]; if(secs.length){ const nav=document.createElement("div"); nav.className="mrnav";
+      nav.innerHTML=secs.map((x,i)=>{ x.id="mrs"+i; const t=x.querySelector("h3"); return `<a href="#mrs${i}" data-go="${i}">${esc((t&&t.childNodes[0]&&t.childNodes[0].textContent||"").trim())}</a>`; }).join("");
+      nav.onclick=e=>{ const a=e.target.closest("[data-go]"); if(!a) return; e.preventDefault(); const t=$("mrs"+a.dataset.go); if(t){ const pg=$("monPage"); pg.scrollTo({top:t.offsetTop-nav.offsetHeight-8,behavior:"smooth"}); } };
+      secs[0].parentNode.insertBefore(nav,secs[0]); } }
+  setTimeout(()=>{ mrLink().catch(e=>{ const b=$("mrLink"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); mrMold().catch(e=>{ const b=$("mrMold"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); },0); const pi=$("mrPrice"); if(pi) pi.onchange=()=>{ LS.set("kanri:kwhPrice",+pi.value||0); mrRender(); }; }
 // ---- 月次実績の追加分：ほかの月の日報も読む（不良と前工程・模型の使用枚数）----
 const MR_LC={};
 async function mrList(k,m){ const key=k+"|"+m, o=MR_LC[key]; if(o&&Date.now()-o.at<120000) return o.L; const L=(await listOf(P[k],m)).filter(d=>String(d.date).slice(0,7)===m); MR_LC[key]={at:Date.now(),L}; return L; }
-async function mrFetch(k,d){ const ck="kanri:mr6:"+k+"|"+d.date+"|"+(d.equip||""), old=LS.get(ck,null); if(old&&old.u&&old.u===(d.u||0)) return old.s;
+async function mrFetch(k,d){ const ck="kanri:mr7:"+k+"|"+d.date+"|"+(d.equip||""), old=LS.get(ck,null); if(old&&old.u&&old.u===(d.u||0)) return old.s;
   const c=await cfgOf(P[k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:d.date,equip:d.equip||""});
   const j=await (await fetch(u,{redirect:"follow"})).json(); if(!j.ok) throw new Error(j.error||"error"); const s=MR_SUM[k](j,d.date); if(d.u) LS.set(ck,{u:d.u,s}); return s; }
 async function mrDays(k,test,months,prog){ const L=[]; for(const m of months){ try{ (await mrList(k,m)).forEach(d=>{ if(test(d.date)) L.push(d); }); }catch(e){} }
