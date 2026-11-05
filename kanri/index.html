@@ -65,6 +65,13 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 #lock input{font-size:28px;text-align:center;width:100%;min-height:56px;border:2px solid #90a4ae;border-radius:10px;letter-spacing:6px;margin:12px 0}
 #lock button{width:100%;min-height:52px;border-radius:10px;border:0;background:#263238;color:#fff;font-size:18px;font-weight:bold}
 #lockMsg{color:#b00020;min-height:20px;font-size:14px}
+/* 毎朝の自動出力の状況 */
+.runst{max-width:1200px;margin:0 auto 10px;background:#fff;border:1px solid #cfd8dc;border-left:8px solid #2e7d32;border-radius:12px;padding:8px 14px;font-size:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.runst.run{border-left-color:#1565c0}.runst.warn{border-left-color:#f9a825}.runst.ng{border-left-color:#c62828}
+.runst b{font-size:16px}
+.rchg{flex:1 1 100%;margin-top:4px}.rchg summary{cursor:pointer}
+.rc1{background:#f7f9fc;border:1px solid #e0e6ef;border-radius:8px;padding:6px 10px;margin-top:6px}
+.rc1 pre{margin:4px 0 0;font-size:12px;white-space:pre-wrap;word-break:break-all;font-family:inherit;line-height:1.5}
 /* 整合性チェック */
 .chk{max-width:1200px;margin:0 auto 14px;background:#fff;border:1px solid #cfd8dc;border-left:8px solid #2e7d32;border-radius:14px;padding:12px 14px}
 .chk.ng{border-left-color:#c62828}.chk.warn{border-left-color:#f9a825}
@@ -252,6 +259,7 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 </div>
 <div id="home">
   <div class="sum" id="sum"></div>
+  <div class="runst" id="runSt" hidden></div>
   <div class="chk" id="chk" hidden></div>
   <div class="grid" id="cards"></div>
   <div class="note">
@@ -446,7 +454,25 @@ $("dlgGo").onclick=async()=>{ if(!dlCur) return; const pin=$("dlgPin").value.tri
 // ---- 整合性チェック（毎朝の自動出力のあとにパソコンが作った結果を、4M変化点のスプレッドシートから読む）----
 let chkOpen=false, chkData=null;
 const prevMonth=m=>{ const [y,mm]=m.split("-").map(Number), d=new Date(y,mm-2,1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
-async function loadCheck(){ const box=$("chk"); try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ box.hidden=true; return; }
+// 毎朝の自動出力（事務所のパソコン）の状況：4M変化点のスプレッドシートの type "run"
+async function loadRun(){ const box=$("runSt"); try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ box.hidden=true; return; }
+    const today=ymd(new Date()), m=today.slice(0,7), u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:m,equip:"run"});
+    const j=await (await fetch(u,{redirect:"follow"})).json(); const L=(j.items||[]).filter(x=>x.type==="run"&&x.raw).map(x=>x.raw).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+    const t=L.find(x=>x.date===today), hm=ms=>{ const d=new Date(+ms); return `${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`; }, now=new Date(), mins=now.getHours()*60+now.getMinutes();
+    let cls="", h="";
+    if(t&&t.state==="done"){ cls=t.errors?"warn":""; h=`<b>${t.errors?"⚠":"✅"} 毎朝の自動出力</b><span>今日 ${hm(t.start)} 開始 → ${hm(t.at)} 完了　保存 ${t.saved||0} 件${t.errors?`・<b style="color:#b00020">エラーあり</b>（パソコンの「出力ログ.txt」を確認）`:"・エラー 0 件"}</span>`;
+      // 上書きで内容が変わった日報（あとから入力・修正された分）
+      const C=Array.isArray(t.changes)?t.changes:(t.changes?[t.changes]:[]);
+      if(C.length){ cls=cls||"warn"; const dd=d=>String(d||"").slice(5).replace("-","/");
+        h+=`<details class="rchg" open><summary><b>📝 前に保存した日報の内容が変わったので上書きしました（${C.length} 件）</b></summary>`+
+          C.map(c=>`<div class="rc1"><b>${esc(String(c.app||"").replace("日報",""))}　${esc(dd(c.date))}</b>　<span class="subt">${esc(c.file||"")}</span><pre>${esc((Array.isArray(c.lines)?c.lines:[c.lines]).join("\n"))}</pre></div>`).join("")+
+          `<div class="subt">くわしくは 鋳造課日報データ\\上書きの変更履歴 に残っています</div></details>`; } }
+    else if(t&&t.state==="start"){ const long=Date.now()-(+t.start)>40*60000; cls=long?"ng":"run"; h=`<b>${long?"⚠":"⏳"} 毎朝の自動出力</b><span>${long?`今日 ${hm(t.start)} に始まったまま終わっていません（途中でパソコンが止まった可能性）`:`いま動いています（${hm(t.start)} 開始。ふつうは 5 分ほどで終わります）`}</span>`; }
+    else if(mins>=8*60){ const last=L[0]; cls="ng"; h=`<b>⚠ 毎朝の自動出力</b><span>今日はまだ動いていません（いつもは 7:30）。事務所のパソコンの電源が切れているか、スリープから起きられなかった可能性があります${last?`。前回：${String(last.date).slice(5).replace("-","/")} ${hm(last.at)}`:""}</span>`; }
+    else { box.hidden=true; return; }
+    box.className="runst "+cls; box.innerHTML=h; box.hidden=false; }
+  catch(e){ box.hidden=true; } }
+async function loadCheck(){ loadRun(); const box=$("chk"); try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ box.hidden=true; return; }
     const get=async m=>{ const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:m,equip:"check"}); const j=await (await fetch(u,{redirect:"follow"})).json(); return j.ok?(j.items||[]).filter(x=>x.type==="check"):[]; };
     const m=st.date.slice(0,7); let L=await get(m); if(!L.some(x=>x.ref<=st.date)) L=L.concat(await get(prevMonth(m)));
     const it=L.filter(x=>x.ref<=st.date).sort((a,b)=>b.ref.localeCompare(a.ref))[0];
