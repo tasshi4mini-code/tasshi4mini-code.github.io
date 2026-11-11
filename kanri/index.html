@@ -508,7 +508,7 @@ const mrItemsEv=j=>(j.items||[]).filter(it=>it.type==="event").map(it=>it.raw||{
 function mrSpan(ts){ const v=ts.filter(t=>t!=null); if(!v.length) return 0; let first=v[0], prev=v[0], tot=0; v.slice(1).forEach(t=>{ let d=t-prev; if(d<-360) d+=1440; if(d>0) tot+=d; prev=t; }); return Math.min(tot,24*60); }
 const mrW=a=>[...new Set(a.map(x=>String(x||"").trim()).filter(Boolean))];
 const MR_SUM={
-  yokai(j,d){ const ch=[]; let kp=null; const wk=[], ts=[]; const hd=(j.items||[]).find(it=>it.type==="header"), stops=(((hd&&hd.raw)||{}).stops||[]).filter(x=>x&&!x.del).map(x=>{ const a=mrMin(x.st), b=mrMin(x.en); let m=a!=null&&b!=null?b-a:null; if(m!=null&&m<0) m+=1440; return {r:x.r||"",m,st:x.st||"",memo:x.memo||""}; }); (j.items||[]).filter(it=>it.type==="row").sort((a,b)=>(+a.ref)-(+b.ref)).forEach(it=>{ const r=it.raw||{};
+  yokai(j,d){ const ch=[]; let kp=null; const wk=[], ts=[]; const hd=(j.items||[]).find(it=>it.type==="header"), stops=(((hd&&hd.raw)||{}).stops||[]).filter(x=>x&&!x.del).map(x=>{ const a=mrMin(x.st), b=mrMin(x.en); let m=a!=null&&b!=null?b-a:null; if(m!=null&&m<0) m+=1440; return {r:x.r||"",m:(x.r==="noro"&&x.sec!=null&&x.en)?x.sec/60:m,st:x.st||"",memo:x.memo||"",ch:x.ch||null}; }); (j.items||[]).filter(it=>it.type==="row").sort((a,b)=>(+a.ref)-(+b.ref)).forEach(it=>{ const r=it.raw||{};
       const kv=mrNum(r.kwh); let ku=null; if(kv!=null){ ku=(kp==null||kv<kp)?kv:kv-kp; kp=kv; }   // 電力量：朝一リセット後の積算値の差
       if(r.worker) wk.push(r.worker); if(r.st&&!r.stAuto) ts.push(mrMin(r.st)); if(r.tap) ts.push(mrMin(r.tap));
       if(!r.tap) return;
@@ -735,6 +735,18 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
       `<div><div class="mrcap">メモ（新しい順）</div><table class="mrt mrev"><tbody>${stp.filter(o=>o.memo).sort((a,b)=>(b.d+b.st).localeCompare(a.d+a.st)).slice(0,10).map(o=>`<tr><td>${md(o.d)} ${esc(o.st)}</td><td>${esc(STOPN[o.r]||"")}</td><td>${esc(o.memo)}</td></tr>`).join("")||'<tr><td class="subt">メモなし</td></tr>'}</tbody></table></div></div>`+
       `<div class="mrcap">日ごとの停止・待ち時間（分）</div>${mrChart(stDay,{bar:true,unit:" 分",fmt:n=>String(Math.round(n)),title:"停止・待ち時間"})}`
     :`<div class="subt">停止・待ちの記録がありません（溶解日報 v24 から入力できます）</div>`)+`</section>`;
+  // ノロ取り（溶解）：日ごとの実績
+  { const nr=stp.filter(o=>o.r==="noro"&&o.m!=null), nT=nr.reduce((a,o)=>a+o.m,0);
+    const byD={}; nr.forEach(o=>{ const b=byD[o.d]||(byD[o.d]={n:0,m:0}); b.n++; b.m+=o.m; });
+    const chOf=d=>(day.find(x=>x.d===d)||{}).ych||0, nDays=Object.keys(byD).length, chT=Object.keys(byD).reduce((a,d)=>a+chOf(d),0);
+    h+=`<section class="mrsec"><h3>ノロ取り（溶解）日ごとの実績</h3>`+(nr.length?
+      `<div class="mtiles">`+tile("月合計",f1(nT)+" 分",`${nr.length} 回`)+tile("1日あたり",f1(nT/nDays)+" 分",`記録のある ${nDays} 日の平均`)+tile("1回平均",f1(nT/nr.length)+" 分","")+tile("1チャージあたり",chT?f1(nT/chT)+" 分":"－",`記録のある日の溶解 ${chT} チャージ`)+`</div>`+
+      `<div class="mrcap">日ごとのノロ取り時間（分）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:byD[x.d]?Math.round(byD[x.d].m*10)/10:null})),{bar:true,unit:" 分",fmt:n=>String(Math.round(n*10)/10),title:"ノロ取り時間"})}`+
+      `<div class="mrscroll"><table class="mrt"><thead><tr><th>日付</th><th>回数</th><th>合計 (分)</th><th>1回平均 (分)</th><th>溶解チャージ数</th><th>1チャージあたり (分)</th></tr></thead><tbody>`+
+      Object.keys(byD).sort().map(d=>{ const b=byD[d], c=chOf(d); return `<tr><td>${md(d)}</td><td>${b.n}</td><td>${f1(b.m)}</td><td>${f1(b.m/b.n)}</td><td>${c||"－"}</td><td>${c?f1(b.m/c):"－"}</td></tr>`; }).join("")+
+      `<tr class="tot"><td>合計</td><td>${nr.length}</td><td>${f1(nT)}</td><td>${f1(nT/nr.length)}</td><td>${chT||"－"}</td><td>${chT?f1(nT/chT):"－"}</td></tr></tbody></table></div>`+
+      `<div class="subt">溶解日報の「ノロ取り スタート・ストップ」（v29〜）と、停止・待ち時間で理由を「ノロ取り」にした記録を集計。ボタンで測ったものは秒まで使います。</div>`
+      :`<div class="subt">この月のノロ取りの記録がありません（溶解日報 v29 の「ノロ取り スタート・ストップ」で記録できます）</div>`)+`</section>`; }
   // 工数（作業者の名前の人数 × 最初〜最後の時刻）
   const MH=[["砂処理","suna",x=>x.s.batch||0,"バッチ"],["溶解","yokai",x=>x.s.ch.reduce((a,c)=>a+c.kg,0)/1000,"t（出湯量）"],["造型","zokei",x=>x.s.fr,"枠"],["注湯","chuto",x=>x.s.ch,"チャージ"],["検査","kensa",x=>x.s.tot||0,"個"],["ショット","shot",x=>x.s.n||0,"件"]];
   h+=`<section class="mrsec"><h3>工数（作業者の名前から）</h3><div class="mrscroll"><table class="mrt"><thead><tr><th>工程</th><th>延べ人数</th><th>1日平均人数</th><th>工数 (人時)</th><th>生産量</th><th>1人時あたり</th><th>1人1日あたり</th></tr></thead><tbody>`+
@@ -757,7 +769,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   setTimeout(()=>{ mrLink().catch(e=>{ const b=$("mrLink"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); mrMold().catch(e=>{ const b=$("mrMold"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); },0); const pi=$("mrPrice"); if(pi) pi.onchange=()=>{ LS.set("kanri:kwhPrice",+pi.value||0); mrRender(); }; }
 // ---- 月次実績の追加分：ほかの月の日報も読む（不良と前工程・模型の使用枚数）----
 const MR_LC={}, MR_MD={};
-const mrCK=(k,d)=>"kanri:mr7:"+k+"|"+d.date+"|"+(d.equip||"");
+const mrCK=(k,d)=>"kanri:mr8:"+k+"|"+d.date+"|"+(d.equip||"");
 // 月まとめ（Apps Script の「削除」ファイルに入っている monthData）。入っていなければ null → 1日ずつ読む
 async function mrMonthData(k,m,force){ const key=k+"|"+m, o=MR_MD[key]; if(!force&&o&&Date.now()-o.at<120000) return o.v; let v=null;
   try{ const j=await postTo(P[k],{action:"monthData",month:m}); if(j&&j.month===m&&j.days) v=j; }catch(e){} MR_MD[key]={at:Date.now(),v}; return v; }
