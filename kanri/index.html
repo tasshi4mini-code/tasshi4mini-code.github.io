@@ -647,7 +647,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   h+=`<div class="mtiles">`+tile("稼働日数",`${work}<small>日</small>`,"溶解・造型・注湯のどれかが入力された日")+tile("溶解チャージ数",`${ych.length}<small>ch</small>`,`出湯量 ${t1(ykg)} t`)+
     tile("1日平均チャージ数",ydays?`${f1(ych.length/ydays)}<small>ch</small>`:"－",`溶解した日 ${ydays} 日`)+tile("平均溶解時間",ymn.length?`${f0(ymn.reduce((a,c)=>a+c.mn,0)/ymn.length)}<small>分</small>`:"－","開始〜出湯（1チャージ）")+tile("造型枠数",`${f0(zfr)}<small>枠</small>`,`${f0(zq)} 個`)+
     tile("製品総重量",`${t1(zkg)}<small>t</small>`,"テスト品を除く")+tile("製品歩留まり",yl!=null?`${f1(yl)}<small>%</small>`:"－","製品総重量 ÷ 出湯量")+
-    tile("溶解の電力量",kw.length?`${f0(kwPt)}<small>kWh/t</small>`:"－",kw.length?`合計 ${f1(kwU/1000)} MWh（${kw.length} ch）`+(price?` ／ ${f0(kwU*price/10000)} 万円`:""):"溶解日報に電力量の入力がありません")+tile("検査 不良率",kTot?`${(kNg/kTot*100).toFixed(2)}<small>%</small>`:"－",`不良 ${f0(kNg)} ／ 検査 ${f0(kTot)} 個`)+tile("砂処理バッチ数",sBatch?`${f0(sBatch)}<small>回</small>`:"－",`測定 ${S.reduce((a,x)=>a+x.s.n,0)} 回`)+tile("異常・変化点",`${ev.length+hkN}<small>件</small>`,`日報 ${ev.length} ／ 4M管理表 ${hkN}`)+`</div>`;
+    tile("溶解の電力量",kw.length?`${f0(kwPt)}<small>kWh/t</small>`:"－",kw.length?`合計 ${f1(kwU/1000)} MWh（${kw.length} ch）`+(price?` ／ ${f0(kwU*price/10000)} 万円`:""):"溶解日報に電力量の入力がありません")+tile("検査 不良率",kTot?`${(kNg/(kTot+kNg)*100).toFixed(2)}<small>%</small>`:"－",`不良 ${f0(kNg)} ／ 検査 ${f0(kTot)} 個`)+tile("砂処理バッチ数",sBatch?`${f0(sBatch)}<small>回</small>`:"－",`測定 ${S.reduce((a,x)=>a+x.s.n,0)} 回`)+tile("異常・変化点",`${ev.length+hkN}<small>件</small>`,`日報 ${ev.length} ／ 4M管理表 ${hkN}`)+`</div>`;
   // 溶解
   const mOrd=Object.entries(mats).sort((a,b)=>b[1].n-a[1].n);
   h+=`<section class="mrsec"><h3>溶解</h3><div class="mrcap">材質ごとの平均溶解時間（開始〜出湯）</div><div class="mtiles">`+
@@ -697,7 +697,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   // 注湯・検査・ショット
   h+=`<section class="mrsec"><h3>注湯・検査・ショット</h3><table class="mrt"><thead><tr><th>工程</th><th>実績</th><th>規格外・不良</th></tr></thead><tbody>`+
     `<tr><td>注湯</td><td>${cch} チャージ ／ 測定 ${cn} 回 ／ 平均受湯温度 ${ctc?f0(cts/ctc)+" ℃":"－"}</td><td>温度の規格外 ${cng} 回${cn?`（${f1(cng/cn*100)}%）`:""}</td></tr>`+
-    `<tr><td>検査</td><td>総数 ${f0(kTot)} 個</td><td>不良 ${f0(kNg)} 個${kTot?`（不良率 ${(kNg/kTot*100).toFixed(2)}%）`:""}</td></tr>`+
+    `<tr><td>検査</td><td>総数 ${f0(kTot)} 個</td><td>不良 ${f0(kNg)} 個${(kTot+kNg)?`（不良率 ${(kNg/(kTot+kNg)*100).toFixed(2)}%）`:""}</td></tr>`+
     `<tr><td>ショット</td><td>${f0(shN)} 件${shT?` ／ 総数 ${f0(shT)}`:""}${shB?` ／ 玉投入 ${f0(shB)} 回`:""}</td><td>－</td></tr></tbody></table>`+
     `<div class="mrg2"><div><div class="mrcap">注湯 受湯温度の規格外（材質別）</div><table class="mrt"><thead><tr><th>材質</th><th>測定</th><th>規格外</th><th>規格外率</th></tr></thead><tbody>`+
       Object.entries(cMat).sort((a,b)=>b[1][1]-a[1][1]).map(([m,v])=>`<tr><td>${esc(m)}</td><td>${v[1]}</td><td>${v[0]}</td><td>${pct(v[0],v[1])}</td></tr>`).join("")+`</tbody></table></div>`+
@@ -708,11 +708,11 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   const dTop=MR_DEF.map(([k,l])=>[l,kdf[k]||0]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]), hTop=Object.entries(khin).filter(([,v])=>v.ng>0).sort((a,b)=>b[1].ng-a[1].ng);
   const dMax=dTop.length?dTop[0][1]:1;
   h+=`<section class="mrsec"><h3>検査 不良 TOP5</h3><div class="mrg2"><div><div class="mrcap">不良の種類</div>`+(dTop.length?`<table class="mrt"><thead><tr><th>順位</th><th>不良</th><th>個数</th><th>不良に占める割合</th><th>不良率（対 検査数）</th></tr></thead><tbody>`+
-      dTop.slice(0,5).map(([l,v],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${esc(l)}<div class="mrhb"><i style="width:${Math.round(v/dMax*100)}%"></i></div></td><td>${f0(v)}</td><td>${kNg?f1(v/kNg*100)+" %":"－"}</td><td>${kTot?(v/kTot*100).toFixed(2)+" %":"－"}</td></tr>`).join("")+
-      `<tr class="tot"><td></td><td style="text-align:left">不良 合計</td><td>${f0(kNg)}</td><td>100 %</td><td>${kTot?(kNg/kTot*100).toFixed(2)+" %":"－"}</td></tr></tbody></table>${dTop.length>5?`<div class="subt">ほか：${dTop.slice(5).map(([l,v])=>esc(l)+" "+f0(v)).join("、")}</div>`:""}`:`<div class="subt">不良の記録はありません</div>`)+
+      dTop.slice(0,5).map(([l,v],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${esc(l)}<div class="mrhb"><i style="width:${Math.round(v/dMax*100)}%"></i></div></td><td>${f0(v)}</td><td>${kNg?f1(v/kNg*100)+" %":"－"}</td><td>${(kTot+kNg)?(v/(kTot+kNg)*100).toFixed(2)+" %":"－"}</td></tr>`).join("")+
+      `<tr class="tot"><td></td><td style="text-align:left">不良 合計</td><td>${f0(kNg)}</td><td>100 %</td><td>${kTot?(kNg/(kTot+kNg)*100).toFixed(2)+" %":"－"}</td></tr></tbody></table>${dTop.length>5?`<div class="subt">ほか：${dTop.slice(5).map(([l,v])=>esc(l)+" "+f0(v)).join("、")}</div>`:""}`:`<div class="subt">不良の記録はありません</div>`)+
     `</div><div><div class="mrcap">不良の多い品番</div>`+(hTop.length?`<table class="mrt"><thead><tr><th>順位</th><th>品番</th><th>不良</th><th>検査数</th><th>不良率</th><th>いちばん多い不良</th></tr></thead><tbody>`+
       hTop.slice(0,5).map(([k,v],i)=>{ const t1=MR_DEF.map(([dk,dl])=>[dl,(v.df||{})[dk]||0]).sort((a,b)=>b[1]-a[1])[0]||["",0];
-        return `<tr><td>${i+1}</td><td style="text-align:left">${esc(k)}${v.n?` <span class="subt">${esc(v.n)}</span>`:""}</td><td>${f0(v.ng)}</td><td>${f0(v.t)}</td><td>${v.t?(v.ng/v.t*100).toFixed(2)+" %":"－"}</td><td style="text-align:left">${t1[1]?`<b>${esc(t1[0])}</b> ${f0(t1[1])}（${f0(t1[1]/v.ng*100)}%）`:"－"}</td></tr>`; }).join("")+`</tbody></table>`:`<div class="subt">不良の記録はありません</div>`)+`</div></div>`+
+        return `<tr><td>${i+1}</td><td style="text-align:left">${esc(k)}${v.n?` <span class="subt">${esc(v.n)}</span>`:""}</td><td>${f0(v.ng)}</td><td>${f0(v.t+v.ng)}</td><td>${(v.t+v.ng)?(v.ng/(v.t+v.ng)*100).toFixed(2)+" %":"－"}</td><td style="text-align:left">${t1[1]?`<b>${esc(t1[0])}</b> ${f0(t1[1])}（${f0(t1[1]/v.ng*100)}%）`:"－"}</td></tr>`; }).join("")+`</tbody></table>`:`<div class="subt">不良の記録はありません</div>`)+`</div></div>`+
     // 品番 × 不良の種類（不良の多い品番 TOP5）。色が濃いほど多い
     (hTop.length?(()=>{ const H5=hTop.slice(0,5), cols=MR_DEF.filter(([k])=>H5.some(([,v])=>(v.df||{})[k])).sort((a,b)=>H5.reduce((x,[,v])=>x+((v.df||{})[b[0]]||0),0)-H5.reduce((x,[,v])=>x+((v.df||{})[a[0]]||0),0));
         const C=cols.slice(0,7), rest=cols.slice(7), mx=Math.max(1,...H5.flatMap(([,v])=>C.map(([k])=>(v.df||{})[k]||0)));
@@ -801,22 +801,22 @@ async function mrLink(){ const D=MR.data, box=$("mrLink"); if(!D||!box) return; 
   const cond={}; dates.forEach(d=>{ const ss=S.filter(x=>x.d.date===d&&x.s), cc=C.filter(x=>x.d.date===d&&x.s), av=k=>{ let a=0,n=0; ss.forEach(x=>{ a+=x.s.s[k][0]; n+=x.s.s[k][1]; }); return n?a/n:null; };
     const ts=cc.reduce((a,x)=>a+x.s.ts,0), tc=cc.reduce((a,x)=>a+x.s.tc,0), n=cc.reduce((a,x)=>a+x.s.n,0), g=cc.reduce((a,x)=>a+x.s.ng,0);
     cond[d]={moist:av("moist"),cb:av("cb"),h:av("h"),temp:tc?ts/tc:null,cng:n?g/n*100:null}; });
-  const md=d=>`${+d.slice(5,7)}/${+d.slice(8)}`, rate=(ng,t)=>t?(ng/t*100):null, f2=v=>v==null?"－":v.toFixed(2);
+  const md=d=>`${+d.slice(5,7)}/${+d.slice(8)}`, rate=(ng,t)=>(t+ng)?(ng/(t+ng)*100):null, f2=v=>v==null?"－":v.toFixed(2);
   const T=MR_SUNA, grp=(lab,test)=>{ const a={t:0,ng:0,n:0}, b={t:0,ng:0,n:0}; dates.forEach(d=>{ const c=cond[d], r=test(c); if(r==null) return; const o=r?a:b; o.t+=lots[d].t; o.ng+=lots[d].ng; o.n++; });
-    return `<tr><td>${lab}</td><td>${a.n} 日</td><td>${a.t?(a.ng/a.t*100).toFixed(2)+" %":"－"}</td><td>${b.n} 日</td><td>${b.t?(b.ng/b.t*100).toFixed(2)+" %":"－"}</td></tr>`; };
+    return `<tr><td>${lab}</td><td>${a.n} 日</td><td>${(a.t+a.ng)?(a.ng/(a.t+a.ng)*100).toFixed(2)+" %":"－"}</td><td>${b.n} 日</td><td>${(b.t+b.ng)?(b.ng/(b.t+b.ng)*100).toFixed(2)+" %":"－"}</td></tr>`; };
   let h=`<div class="mrcap">条件ごとの不良率（検査のロット＝造型日で、その日の条件とつなげる）</div><table class="mrt"><thead><tr><th>条件</th><th>狙いの範囲の日</th><th>不良率</th><th>狙いを外れた日</th><th>不良率</th></tr></thead><tbody>`+
     grp(`砂の水分（狙い ${T.moist.tmin}〜${T.moist.tmax}%）`,c=>c.moist==null?null:(c.moist>=T.moist.tmin&&c.moist<=T.moist.tmax))+
     grp(`CB（狙い ${T.cb.tmin}〜${T.cb.tmax}%）`,c=>c.cb==null?null:(c.cb>=T.cb.tmin&&c.cb<=T.cb.tmax))+
     grp(`鋳型硬度（狙い ${T.hard.tmin}〜${T.hard.tmax}）`,c=>c.h==null?null:(c.h>=T.hard.tmin&&c.h<=T.hard.tmax))+
     grp(`受湯温度（規格外 0 回の日 ／ ある日）`,c=>c.cng==null?null:c.cng===0)+`</tbody></table><div class="subt">日の平均で分けています。日数が少ないうちは差が偶然のこともあります。</div>`;
-  const pts=dates.filter(d=>cond[d].moist!=null&&lots[d].t>0).map(d=>({x:cond[d].moist,y:rate(lots[d].ng,lots[d].t),t:`${md(d)} 水分 ${cond[d].moist.toFixed(2)}% ／ 不良率 ${rate(lots[d].ng,lots[d].t).toFixed(2)}%（検査 ${lots[d].t} 個）`}));
+  const pts=dates.filter(d=>cond[d].moist!=null&&lots[d].t>0).map(d=>({x:cond[d].moist,y:rate(lots[d].ng,lots[d].t),t:`${md(d)} 水分 ${cond[d].moist.toFixed(2)}% ／ 不良率 ${rate(lots[d].ng,lots[d].t).toFixed(2)}%（検査 ${lots[d].t+lots[d].ng} 個）`}));
   const pts2=dates.filter(d=>cond[d].cb!=null&&lots[d].t>0).map(d=>({x:cond[d].cb,y:rate(lots[d].ng,lots[d].t),t:`${md(d)} CB ${cond[d].cb.toFixed(1)}% ／ 不良率 ${rate(lots[d].ng,lots[d].t).toFixed(2)}%`}));
   h+=`<div class="mrg2"><div><div class="mrcap">砂の水分 と 不良率（点＝造型日。青い帯＝狙いの範囲）</div>${mrScatter(pts,{xl:"水分 (%)",fx:v=>v.toFixed(2),fy:v=>v.toFixed(1)+"%",band:[T.moist.tmin,T.moist.tmax],title:"水分と不良率"})}</div>`+
      `<div><div class="mrcap">CB と 不良率</div>${mrScatter(pts2,{xl:"CB (%)",fx:v=>v.toFixed(1),fy:v=>v.toFixed(1)+"%",band:[T.cb.tmin,T.cb.tmax],title:"CBと不良率"})}</div></div>`;
   h+=`<div class="mrcap">造型日ごと（不良率の高い順）</div><div class="mrscroll"><table class="mrt mrday"><thead><tr><th>造型日</th><th>検査数</th><th>不良</th><th>不良率</th><th>主な不良</th><th>水分 %</th><th>CB %</th><th>鋳型硬度</th><th>受湯温度 ℃</th><th>受湯 規格外率</th></tr></thead><tbody>`+
     dates.slice().sort((a,b)=>(rate(lots[b].ng,lots[b].t)||0)-(rate(lots[a].ng,lots[a].t)||0)).slice(0,40).map(d=>{ const o=lots[d], c=cond[d], top=MR_DEF.map(([k,l])=>[l,o.df[k]||0]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]+" "+x[1]).join("・");
       const ok=(v,sp)=>v==null?"":(v<sp.tmin||v>sp.tmax?' style="color:#b00020;font-weight:bold"':"");
-      return `<tr><td>${md(d)}${d.slice(0,7)!==month?' <span class="subt">前月</span>':""}</td><td>${o.t}</td><td>${o.ng}</td><td>${o.t?(o.ng/o.t*100).toFixed(2)+" %":"－"}</td><td style="text-align:left">${esc(top)}</td><td${ok(c.moist,T.moist)}>${f2(c.moist)}</td><td${ok(c.cb,T.cb)}>${c.cb==null?"－":c.cb.toFixed(1)}</td><td${ok(c.h,T.hard)}>${c.h==null?"－":c.h.toFixed(1)}</td><td>${c.temp==null?"－":Math.round(c.temp)}</td><td>${c.cng==null?"－":c.cng.toFixed(1)+" %"}</td></tr>`; }).join("")+
+      return `<tr><td>${md(d)}${d.slice(0,7)!==month?' <span class="subt">前月</span>':""}</td><td>${o.t+o.ng}</td><td>${o.ng}</td><td>${(o.t+o.ng)?(o.ng/(o.t+o.ng)*100).toFixed(2)+" %":"－"}</td><td style="text-align:left">${esc(top)}</td><td${ok(c.moist,T.moist)}>${f2(c.moist)}</td><td${ok(c.cb,T.cb)}>${c.cb==null?"－":c.cb.toFixed(1)}</td><td${ok(c.h,T.hard)}>${c.h==null?"－":c.h.toFixed(1)}</td><td>${c.temp==null?"－":Math.round(c.temp)}</td><td>${c.cng==null?"－":c.cng.toFixed(1)+" %"}</td></tr>`; }).join("")+
     `</tbody></table></div><div class="subt">赤字＝狙いの範囲の外。</div>`;
   box.innerHTML=h; }
 // 模型（金型）の使用枚数：前回の点検からの造型枠数（品番別）。点検の目安の枚数・点検日はこの端末に覚える
