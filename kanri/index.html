@@ -523,13 +523,13 @@ const MR_SUM={
       ["moist","cb","temp","humid"].forEach(k=>{ const v=mrNum(r[k]); if(v!=null){ s[k][0]+=v; s[k][1]++; any=true; } });
       const hs=["h1n","h1s","h2n","h2s"].map(k=>mrNum(r[k])).filter(v=>v!=null); if(hs.length){ s.h[0]+=hs.reduce((a,b)=>a+b,0)/hs.length; s.h[1]++; any=true; } if(any) n++; });
     return {n,s,ng,wn,nr,w:mrW(wk),span:n*60,batch:mrNum((j.header||{}).batch),ev:mrEvents(j.events,d,"砂処理")}; },
-  zokei(j,d){ let fr=0,q=0,kg=0,un=0,mins=0,frT=0; const hin={}, wk=[], ts=[]; const hd=(j.items||[]).find(it=>it.type==="header"), cnt=mrNum(((hd&&hd.raw)||{}).counter);
+  zokei(j,d){ let fr=0,q=0,kg=0,un=0,mins=0,frT=0,kowa=0; const hin={}, wk=[], ts=[]; const hd=(j.items||[]).find(it=>it.type==="header"), cnt=mrNum(((hd&&hd.raw)||{}).counter);
     (j.items||[]).forEach(it=>{ if(it.type!=="row") return; const r=it.raw||{}; const its=(r.items||[]).filter(Boolean); if(!its.some(v=>v.hin)) return;
       fr+=mrNum(r.total)||0; un+=mrNum(r.unp)||0; if(r.worker) wk.push(r.worker); ts.push(mrMin(r.st)); ts.push(mrMin(r.en));
       { const a=mrMin(r.st), b=mrMin(r.en), t=mrNum(r.total); if(a!=null&&b!=null&&t){ let m=b-a; if(m<0) m+=1440; if(m>0&&m<=16*60){ mins+=m; frT+=t; } } }
       its.forEach((v,k)=>{ if(!v.hin||v.test) return; const qq=mrNum((r.qtyOut||[])[k])||0, w=mrNum((r.wOut||[])[k])||0; q+=qq; kg+=w;
-        const h=hin[v.hin]||(hin[v.hin]={n:v.name||"",q:0,kg:0,fr:0}); h.q+=qq; h.kg+=w; h.fr+=mrNum(k>0&&v.tot!=null&&v.tot!==""?v.tot:r.total)||0; }); });
-    return {fr,q,kg,un,mins,frT,cnt,hin,w:mrW(wk),span:mrSpan(ts),ev:mrEvents(mrItemsEv(j),d,"造型")}; },
+        const kw=mrNum(v.kowa)||0; kowa+=kw; const h=hin[v.hin]||(hin[v.hin]={n:v.name||"",q:0,kg:0,fr:0,kw:0}); h.q+=qq; h.kg+=w; h.kw=(h.kw||0)+kw; h.fr+=mrNum(k>0&&v.tot!=null&&v.tot!==""?v.tot:r.total)||0; }); });
+    return {fr,q,kg,un,mins,frT,cnt,hin,kowa,w:mrW(wk),span:mrSpan(ts),ev:mrEvents(mrItemsEv(j),d,"造型")}; },
   chuto(j,d){ let ch=0,n=0,ng=0,ts=0,tc=0; const rw=[], wk=[], tl=[];
     (j.items||[]).filter(it=>it.type==="block").sort((a,b)=>(+a.ref)-(+b.ref)).forEach(it=>{ const bm=(it.raw||{}).mat||""; const rows=((it.raw||{}).rows||[]).filter(r=>r&&r.time); if(!rows.length) return; ch++;
       rows.forEach(r=>{ n++; if(r.worker) wk.push(r.worker); tl.push(mrMin(r.time)); const f=r.rrjudge||r.rejudge||r.judge||""; const g=f==="×"; if(g) ng++; const t=mrNum(r.temp); if(t!=null){ ts+=t; tc++; }
@@ -724,6 +724,16 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
     PN.map(p=>`<td>${evc[p]||0}</td>`).join("")+`<td>${hkN}${hkNg?`<div class="subt">処置まだ ${hkNg}</div>`:""}</td><td><b>${ev.length+hkN}</b></td></tr></tbody></table>`+
     (ev.length?`<table class="mrt mrev"><thead><tr><th>日付</th><th>工程</th><th>内容</th><th>処置</th><th>担当</th></tr></thead><tbody>`+
       ev.slice(0,60).map(e=>`<tr><td>${md(e.d)} ${esc(e.t)}</td><td>${esc(e.p)}</td><td>${esc(e.c)}</td><td>${esc(e.a)}</td><td>${esc(e.w)}</td></tr>`).join("")+`</tbody></table>${ev.length>60?`<div class="subt">ほか ${ev.length-60} 件</div>`:""}`:`<div class="subt">日報の異常・変化点の記録はありません</div>`)+`</section>`;
+  // 中子の破損（造型）：品番ごと・日ごと（造型日報 v24〜）
+  { const KH={}, KD={}; let kT=0; Z.forEach(x=>{ const d=x.d.date; Object.entries(x.s.hin||{}).forEach(([hn,v])=>{ const o=KH[hn]||(KH[hn]={n:v.n,kw:0,q:0}); o.kw+=v.kw||0; o.q+=v.q||0; }); const k=x.s.kowa||0; kT+=k; KD[d]=(KD[d]||0)+k; });
+    const top=Object.entries(KH).filter(([,o])=>o.kw>0).sort((a,b)=>b[1].kw-a[1].kw), kQ=top.reduce((a,[,o])=>a+o.q,0);
+    h+=`<section class="mrsec"><h3>中子の破損（造型）</h3>`+(kT?
+      `<div class="mtiles">`+tile("中子破損 合計",f0(kT)+" 個",`${top.length} 品番`)+tile("1日あたり",f1(kT/Object.values(KD).filter(v=>v>0).length)+" 個","破損のあった日の平均")+tile("全品番の生産個数に対して",zq?(kT/zq*100).toFixed(2)+" %":"－",`生産個数 ${f0(zq)} 個`)+`</div>`+
+      `<div class="mrcap">日ごとの中子破損（個）</div>${mrChart(dayC.map(x=>({x:md(x.d),y:KD[x.d]||null})),{bar:true,int:true,unit:" 個",fmt:n=>String(Math.round(n)),title:"中子破損"})}`+
+      `<div class="mrcap">品番ごと（多い順）</div><div class="mrscroll"><table class="mrt"><thead><tr><th>順位</th><th>品番</th><th>中子破損 (個)</th><th>生産個数</th><th>生産個数に対する割合</th><th>破損に占める割合</th></tr></thead><tbody>`+
+      top.map(([hn,o],i)=>`<tr><td>${i+1}</td><td style="text-align:left">${esc(hn)}${o.n?` <span class="subt">${esc(o.n)}</span>`:""}</td><td>${f0(o.kw)}</td><td>${f0(o.q)}</td><td>${o.q?(o.kw/o.q*100).toFixed(2)+" %":"－"}</td><td>${f1(o.kw/kT*100)} %</td></tr>`).join("")+
+      `<tr class="tot"><td></td><td>合計</td><td>${f0(kT)}</td><td>${f0(kQ)}</td><td>${kQ?(kT/kQ*100).toFixed(2)+" %":"－"}</td><td>100 %</td></tr></tbody></table></div>`
+      :`<div class="subt">この月の中子破損の記録はありません（造型日報 v24 から品番ごとに入力できます）</div>`)+`</section>`; }
   // 停止・待ち時間（溶解）
   const STOPN={kosho:"設備故障",chuto:"注湯待ち",suna:"砂待ち",hoshu:"溶解炉補修",noro:"ノロ取り",seibun:"成分待ち","":"理由なし"};
   const stp=Y.flatMap(x=>(x.s.stops||[]).map(o=>Object.assign({d:x.d.date},o))), stT=stp.reduce((a,o)=>a+(o.m||0),0), stR={};
