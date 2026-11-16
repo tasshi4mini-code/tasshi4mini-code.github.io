@@ -502,7 +502,8 @@ const MR_SUNA={moist:{min:3.0,max:4.0,tmin:3.1,tmax:3.5},cb:{min:30,max:40,tmin:
 const MR_MIX=[["sen","銑鉄"],["kou","新断バラ（鋼鉄）"],["dar","ダライ粉"],["mod","戻り材"],["kat","加炭材"],["sil","シリコン"],["addSc","スクラップ追加"]];
 const mrNum=v=>{ if(v===""||v==null) return null; const n=parseFloat(String(v).replace(/[，,]/g,".").replace(/[０-９．]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))); return isNaN(n)?null:n; };
 const mrMin=hm=>{ const m=/^(\d{1,2}):(\d{2})/.exec(hm||""); return m?(+m[1])*60+(+m[2]):null; };
-function mrEvents(list,date,proc){ return (list||[]).filter(e=>e&&!e.del&&(e.content||e.action)).map(e=>({d:date,p:proc,t:e.start||e.time||"",c:String(e.content||""),a:String(e.action||""),w:String(e.person||"")})); }
+function mrEvents(list,date,proc){ return (list||[]).filter(e=>e&&!e.del&&(e.content||e.action)).map(e=>{ const t=e.start||e.time||"", en=e.end||"", a=mrMin(t), b=mrMin(en); let m=a!=null&&b!=null?b-a:null; if(m!=null&&m<0) m+=1440; if(m!=null&&m>16*60) m=null;
+  return {d:date,p:proc,t,e:en,m,c:String(e.content||""),a:String(e.action||""),w:String(e.person||"")}; }); }
 const mrItemsEv=j=>(j.items||[]).filter(it=>it.type==="event").map(it=>it.raw||{});
 // 作業者と作業時間（最初〜最後の時刻）：工数の目安＝人数 × 時間
 function mrSpan(ts){ const v=ts.filter(t=>t!=null); if(!v.length) return 0; let first=v[0], prev=v[0], tot=0; v.slice(1).forEach(t=>{ let d=t-prev; if(d<-360) d+=1440; if(d>0) tot+=d; prev=t; }); return Math.min(tot,24*60); }
@@ -722,8 +723,23 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   // 異常報告
   h+=`<section class="mrsec"><h3>異常・変化点の報告</h3><table class="mrt"><thead><tr>${PN.map(p=>`<th>${p}</th>`).join("")}<th>4M変化点管理表</th><th>合計</th></tr></thead><tbody><tr>`+
     PN.map(p=>`<td>${evc[p]||0}</td>`).join("")+`<td>${hkN}${hkNg?`<div class="subt">処置まだ ${hkNg}</div>`:""}</td><td><b>${ev.length+hkN}</b></td></tr></tbody></table>`+
-    (ev.length?`<table class="mrt mrev"><thead><tr><th>日付</th><th>工程</th><th>内容</th><th>処置</th><th>担当</th></tr></thead><tbody>`+
-      ev.slice(0,60).map(e=>`<tr><td>${md(e.d)} ${esc(e.t)}</td><td>${esc(e.p)}</td><td>${esc(e.c)}</td><td>${esc(e.a)}</td><td>${esc(e.w)}</td></tr>`).join("")+`</tbody></table>${ev.length>60?`<div class="subt">ほか ${ev.length-60} 件</div>`:""}`:`<div class="subt">日報の異常・変化点の記録はありません</div>`)+`</section>`;
+    (ev.length?`<div class="mrcap" style="margin-top:12px">報告の一覧（新しい順）</div><table class="mrt mrev"><thead><tr><th>日付・時刻</th><th>工程</th><th>停止時間</th><th>内容</th><th>処置</th><th>担当</th></tr></thead><tbody>`+
+      ev.slice(0,60).map(e=>`<tr><td style="white-space:nowrap">${md(e.d)} ${esc(e.t)}${e.e?"〜"+esc(e.e):""}</td><td>${esc(e.p)}</td><td>${e.m!=null?f0(e.m)+" 分":"－"}</td><td>${esc(e.c)}</td><td>${esc(e.a)}</td><td>${esc(e.w)}</td></tr>`).join("")+`</tbody></table>${ev.length>60?`<div class="subt">ほか ${ev.length-60} 件</div>`:""}`:`<div class="subt">日報の異常・変化点の記録はありません</div>`)+`</section>`;
+  // 異常報告の停止時間（開始〜終了の時間。溶解の停止・待ち時間と同じ見せ方）
+  { const tm=ev.filter(e=>e.m!=null), noE=ev.filter(e=>e.m==null&&e.t).length, T=tm.reduce((a,e)=>a+e.m,0), byP={};
+    tm.forEach(e=>{ const o=byP[e.p]||(byP[e.p]={n:0,m:0,mx:0}); o.n++; o.m+=e.m; o.mx=Math.max(o.mx,e.m); });
+    const days=new Set(tm.map(e=>e.d)).size, evDay=dayC.map(x=>({x:md(x.d),y:tm.filter(e=>e.d===x.d).reduce((a,e)=>a+e.m,0)||null}));
+    h+=`<section class="mrsec"><h3>異常報告の停止時間</h3>`+(tm.length?
+      `<div class="mtiles">`+tile("停止時間 合計",f0(T)+" 分",`${tm.length} 件`+(T>=60?`（${f1(T/60)} 時間）`:""))+tile("1日あたり",f0(T/days)+" 分",`報告のあった ${days} 日の平均`)+tile("1件平均",f1(T/tm.length)+" 分","")+
+        tile("いちばん長い停止",f0(Math.max(...tm.map(e=>e.m)))+" 分",(()=>{ const e=tm.reduce((a,b)=>b.m>a.m?b:a); return `${md(e.d)} ${esc(e.p)}`; })())+`</div>`+
+      `<div class="mrg2"><div><div class="mrcap">工程ごと</div><table class="mrt"><thead><tr><th>工程</th><th>件数</th><th>時間 (分)</th><th>割合</th><th>1件平均</th><th>最長</th></tr></thead><tbody>`+
+        Object.entries(byP).sort((a,b)=>b[1].m-a[1].m).map(([k,o])=>`<tr><td style="text-align:left">${esc(k)}<div class="mrhb"><i style="width:${T?Math.round(o.m/T*100):0}%"></i></div></td><td>${o.n}</td><td>${f0(o.m)}</td><td>${T?f1(o.m/T*100)+" %":"－"}</td><td>${f0(o.m/o.n)} 分</td><td>${f0(o.mx)} 分</td></tr>`).join("")+
+        `<tr class="tot"><td>合計</td><td>${tm.length}</td><td>${f0(T)}</td><td>100 %</td><td>${f0(T/tm.length)} 分</td><td></td></tr></tbody></table></div>`+
+      `<div><div class="mrcap">停止時間の長い報告 TOP10</div><table class="mrt mrev"><thead><tr><th>日付・時刻</th><th>工程</th><th>時間</th><th>内容</th></tr></thead><tbody>`+
+        [...tm].sort((a,b)=>b.m-a.m).slice(0,10).map(e=>`<tr><td style="white-space:nowrap">${md(e.d)} ${esc(e.t)}〜${esc(e.e)}</td><td>${esc(e.p)}</td><td><b>${f0(e.m)}</b> 分</td><td style="text-align:left">${esc(e.c)}${e.a?`<div class="subt">処置：${esc(e.a)}</div>`:""}</td></tr>`).join("")+`</tbody></table></div></div>`+
+      `<div class="mrcap">日ごとの停止時間（分）</div>${mrChart(evDay,{bar:true,unit:" 分",fmt:n=>String(Math.round(n)),title:"異常報告の停止時間"})}`+
+      `<div class="subt">各工程の日報の「異常/変化点」に入れた開始〜終了の時間を集計。${noE?`終了時刻が入っていない報告 ${noE} 件は時間に入れていません。`:""}砂処理の日報には終了時刻の欄がないため入りません。</div>`
+      :`<div class="subt">開始と終了の時刻が入った異常報告がありません（日報の「異常/変化点」に終了時刻を入れると集計されます）</div>`)+`</section>`; }
   // 中子の破損（造型）：品番ごと・日ごと（造型日報 v24〜）
   { const KH={}, KD={}; let kT=0; Z.forEach(x=>{ const d=x.d.date; Object.entries(x.s.hin||{}).forEach(([hn,v])=>{ const o=KH[hn]||(KH[hn]={n:v.n,kw:0,q:0}); o.kw+=v.kw||0; o.q+=v.q||0; }); const k=x.s.kowa||0; kT+=k; KD[d]=(KD[d]||0)+k; });
     const top=Object.entries(KH).filter(([,o])=>o.kw>0).sort((a,b)=>b[1].kw-a[1].kw), kQ=top.reduce((a,[,o])=>a+o.q,0);
@@ -779,7 +795,7 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
   setTimeout(()=>{ mrLink().catch(e=>{ const b=$("mrLink"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); mrMold().catch(e=>{ const b=$("mrMold"); if(b) b.innerHTML=`<div class="subt">読み込めませんでした（${esc(e.message||e)}）</div>`; }); },0); const pi=$("mrPrice"); if(pi) pi.onchange=()=>{ LS.set("kanri:kwhPrice",+pi.value||0); mrRender(); }; }
 // ---- 月次実績の追加分：ほかの月の日報も読む（不良と前工程・模型の使用枚数）----
 const MR_LC={}, MR_MD={};
-const mrCK=(k,d)=>"kanri:mr8:"+k+"|"+d.date+"|"+(d.equip||"");
+const mrCK=(k,d)=>"kanri:mr9:"+k+"|"+d.date+"|"+(d.equip||"");
 // 月まとめ（Apps Script の「削除」ファイルに入っている monthData）。入っていなければ null → 1日ずつ読む
 async function mrMonthData(k,m,force){ const key=k+"|"+m, o=MR_MD[key]; if(!force&&o&&Date.now()-o.at<120000) return o.v; let v=null;
   try{ const j=await postTo(P[k],{action:"monthData",month:m}); if(j&&j.month===m&&j.days) v=j; }catch(e){} MR_MD[key]={at:Date.now(),v}; return v; }
