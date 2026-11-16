@@ -69,6 +69,21 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 .runst{max-width:1200px;margin:0 auto 10px;background:#fff;border:1px solid #cfd8dc;border-left:8px solid #2e7d32;border-radius:12px;padding:8px 14px;font-size:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .runst.run{border-left-color:#1565c0}.runst.warn{border-left-color:#f9a825}.runst.ng{border-left-color:#c62828}
 .runst b{font-size:16px}
+/* 後日の変更 */
+.chgbox{max-width:1200px;margin:0 auto 10px;background:#fff;border:1px solid #cfd8dc;border-left:8px solid #c62828;border-radius:12px;padding:8px 14px;font-size:15px}
+.chgbox.none{border-left-color:#2e7d32}
+.chgbox .ch-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chgbox .ch-h b{font-size:16px}.chgbox .ch-h .sp{flex:1}
+.chgbox .ch-h button{min-height:36px;border-radius:8px;padding:0 12px}
+.chgbox .c1{border-top:1px solid #eceff1;padding:8px 0;display:grid;gap:4px}
+.chgbox .c1.ok{opacity:.55}
+.chgbox .c1 .t{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chgbox .c1 .app{color:#fff;border-radius:6px;padding:1px 8px;font-size:13px;font-weight:bold}
+.chgbox .c1 table{border-collapse:collapse;font-size:14px;width:100%;max-width:760px}
+.chgbox .c1 td,.chgbox .c1 th{border:1px solid #e0e4ea;padding:3px 8px;text-align:left}
+.chgbox .c1 th{background:#f3f6fb;font-weight:normal;color:#5d6778;font-size:12px}
+.chgbox .c1 td.b{color:#9aa4b3;text-decoration:line-through}.chgbox .c1 td.a{color:#b00020;font-weight:bold}
+.chgbox .c1 button{min-height:32px;border-radius:8px;padding:0 10px;font-size:13px}
 .rchg{flex:1 1 100%;margin-top:4px}.rchg summary{cursor:pointer}
 .rc1{background:#f7f9fc;border:1px solid #e0e6ef;border-radius:8px;padding:6px 10px;margin-top:6px}
 .rc1 pre{margin:4px 0 0;font-size:12px;white-space:pre-wrap;word-break:break-all;font-family:inherit;line-height:1.5}
@@ -261,6 +276,7 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 </div>
 <div id="home">
   <div class="sum" id="sum"></div>
+  <div class="chgbox" id="chgBox" hidden></div>
   <div class="runst" id="runSt" hidden></div>
   <div class="chk" id="chk" hidden></div>
   <div class="grid" id="cards"></div>
@@ -460,6 +476,34 @@ $("dlgGo").onclick=async()=>{ if(!dlCur) return; const pin=$("dlgPin").value.tri
 let chkOpen=false, chkData=null;
 const prevMonth=m=>{ const [y,mm]=m.split("-").map(Number), d=new Date(y,mm-2,1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
 // 毎朝の自動出力（事務所のパソコン）の状況：4M変化点のスプレッドシートの type "run"
+// ---- 後日の変更：前の日の日報を、翌朝 7:30（毎朝の自動出力）より後に変えたとき（各日報アプリが 4M変化点のスプレッドシートに送る）----
+let CHG={all:false,list:[]};
+async function loadChg(){ const box=$("chgBox"); try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ box.hidden=true; return; }
+    const d=new Date(), m0=ymd(d).slice(0,7), pd=new Date(d.getFullYear(),d.getMonth()-1,1), m1=ymd(pd).slice(0,7), L=[];
+    for(const m of [m0,m1]){ const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:m,equip:"chg"});
+      const j=await (await fetch(u,{redirect:"follow"})).json(); (j.items||[]).forEach(x=>{ if(x.type==="chg"&&x.raw) L.push(Object.assign({},x.raw,{_m:m})); }); }
+    CHG.list=L.sort((a,b)=>(b.at||0)-(a.at||0)); renderChg(); }
+  catch(e){ box.hidden=true; } }
+function renderChg(){ const box=$("chgBox"), L=CHG.list, ng=L.filter(x=>!x.ok), show=(CHG.all?L.slice(0,80):ng.slice(0,80));
+  if(!L.length){ box.hidden=true; return; }
+  const md=d=>String(d||"").slice(5).replace("-","/"), at=t=>{ const d=new Date(+t); return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`; };
+  const col=a=>((PROCS.find(p=>p.name===a)||{}).c)||"#455a64";
+  box.className="chgbox"+(ng.length?"":" none"); box.hidden=false;
+  box.innerHTML=`<div class="ch-h"><b>${ng.length?"📝":"✅"} 後日の変更</b><span>${ng.length?`前の日の日報が、翌朝 7:30 より後に変更されました（未確認 <b style="color:#c62828">${ng.length}</b> 件）`:"未確認の変更はありません"}</span><span class="sp"></span>`+
+    `<label class="subt"><input type="checkbox" id="chgAll" ${CHG.all?"checked":""}> 確認済みも表示</label>${ng.length?`<button id="chgOkAll">すべて確認済みにする</button>`:""}</div>`+
+    show.map(x=>`<div class="c1 ${x.ok?"ok":""}"><div class="t"><span class="app" style="background:${col(x.app)}">${esc(x.app)}</span><b>${esc(md(x.d))} の日報</b><span>${esc(x.equip||"")}</span>${x.no?`<span>${esc(x.kind)} ${x.no}</span>`:`<span>${esc(x.kind||"")}</span>`}${x.hin?`<span>${esc(x.hin)}</span>`:""}`+
+      `<span class="subt">変更 ${esc(at(x.at))}${x.who?"・"+esc(x.who):""}${x.known===false?"・変更前は不明（日報を開いたとき電波がなかった等）":""}</span><span style="flex:1"></span>`+
+      (x.ok?`<span class="subt">確認済み ${esc(at(x.okAt))}</span>`:`<button data-chgok="${esc(x.id)}">確認済みにする</button>`)+`</div>`+
+      `<table><tr><th>項目</th><th>変更前</th><th>変更後</th></tr>${(x.ch||[]).map(c=>`<tr><td>${esc(c[0])}</td><td class="b">${esc(c[1]===""?"（空欄）":c[1])}</td><td class="a">${esc(c[2]===""?"（空欄）":c[2])}</td></tr>`).join("")}</table>${x.more?`<div class="subt">ほか ${x.more} 項目</div>`:""}</div>`).join("")+
+    (show.length<(CHG.all?L.length:ng.length)?`<div class="subt">ほか ${(CHG.all?L.length:ng.length)-show.length} 件</div>`:"");
+  $("chgAll").onchange=e=>{ CHG.all=e.target.checked; renderChg(); };
+  if($("chgOkAll")) $("chgOkAll").onclick=()=>{ if(confirm(`未確認の ${ng.length} 件を、すべて確認済みにしますか？`)) chgOk(ng); };
+  box.querySelectorAll("[data-chgok]").forEach(b=>b.onclick=()=>chgOk(L.filter(x=>x.id===b.dataset.chgok))); }
+async function chgOk(list){ if(!list.length) return; try{ const c=await cfgOf(P.henka); const now=Date.now();
+    const ops=list.map(x=>{ const raw=Object.assign({},x,{ok:true,okAt:now}); const m=raw._m; delete raw._m; return {type:"chg",date:m,equip:"chg",ref:x.id,u:now,raw}; });
+    for(let i=0;i<ops.length;i+=30){ const r=await fetch(c.syncUrl,{method:"POST",body:JSON.stringify({token:c.token,ops:ops.slice(i,i+30)}),redirect:"follow"}); const j=await r.json(); if(!j.ok) throw new Error(j.error||"error"); }
+    list.forEach(x=>{ x.ok=true; x.okAt=now; }); renderChg(); }
+  catch(e){ alert("確認済みにできませんでした（"+(e.message||e)+"）"); } }
 async function loadRun(){ const box=$("runSt"); try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ box.hidden=true; return; }
     const today=ymd(new Date()), m=today.slice(0,7), u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:m,equip:"run"});
     const j=await (await fetch(u,{redirect:"follow"})).json(); const L=(j.items||[]).filter(x=>x.type==="run"&&x.raw).map(x=>x.raw).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -477,7 +521,7 @@ async function loadRun(){ const box=$("runSt"); try{ const c=await cfgOf(P.henka
     else { box.hidden=true; return; }
     box.className="runst "+cls; box.innerHTML=h; box.hidden=false; }
   catch(e){ box.hidden=true; } }
-async function loadCheck(){ loadRun(); const box=$("chk"); try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ box.hidden=true; return; }
+async function loadCheck(){ loadRun(); loadChg(); const box=$("chk"); try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ box.hidden=true; return; }
     const get=async m=>{ const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:m,equip:"check"}); const j=await (await fetch(u,{redirect:"follow"})).json(); return j.ok?(j.items||[]).filter(x=>x.type==="check"):[]; };
     const m=st.date.slice(0,7); let L=await get(m); if(!L.some(x=>x.ref<=st.date)) L=L.concat(await get(prevMonth(m)));
     const it=L.filter(x=>x.ref<=st.date).sort((a,b)=>b.ref.localeCompare(a.ref))[0];
