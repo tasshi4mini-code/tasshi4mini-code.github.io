@@ -212,6 +212,26 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 #delPage[hidden]{display:none}
 #bsPage{flex:1 1 auto;overflow-y:auto;background:#eef1f6;-webkit-overflow-scrolling:touch}
 #bsPage[hidden]{display:none}
+#hsPage{flex:1 1 auto;overflow-y:auto;background:#eef1f6;-webkit-overflow-scrolling:touch}
+#hsPage[hidden]{display:none}
+.hswrap{max-width:1200px;margin:0 auto;padding:14px}
+.hsbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.hsbar input{flex:1 1 280px;font-size:20px;min-height:48px;padding:0 12px;border:2px solid #00796b;border-radius:10px;text-transform:uppercase;font-weight:bold}
+.hsbar select{font-size:16px;min-height:48px;border-radius:10px}
+.hsbar button{min-height:48px;font-size:17px;padding:0 20px;border-radius:10px}
+.hssec{background:#fff;border-radius:12px;padding:10px 14px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.hssec h3{margin:0 0 8px;font-size:17px;border-left:5px solid #00796b;padding-left:8px}
+.hstiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.hstile{border:1px solid #cfd8dc;border-radius:10px;padding:8px 12px}
+.hstile .l{font-size:13px;color:#00796b;font-weight:bold}.hstile .v{font-size:24px;font-weight:bold}.hstile .s{font-size:12px;color:#5d6778}
+.hst{width:100%;border-collapse:collapse;font-size:14px}
+.hst th{background:#e0f2f1;color:#004d40;font-weight:bold;padding:5px 6px;border:1px solid #b2dfdb;white-space:nowrap}
+.hst td{border:1px solid #e0e4ea;padding:4px 6px;vertical-align:top}
+.hst td.n{text-align:right;white-space:nowrap}
+.hst .pz{color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:bold;white-space:nowrap}
+.hst tr.dh td{background:#f5f7fa;font-weight:bold}
+.hsng{color:#b00020;font-weight:bold}
+.hsprog{height:8px;background:#e3e7ee;border-radius:99px;overflow:hidden;margin:8px 0}.hsprog i{display:block;height:100%;background:#00796b}
 .dwrap{max-width:900px;margin:0 auto}
 .dwarn{background:#fff3f3;border:2px solid #e57373;border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.7;color:#7f1d1d;margin-bottom:12px}
 .dctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
@@ -302,6 +322,11 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
   ・すぐにやり直したいときは、パソコンのデスクトップ「日報Excel自動出力」の「整合性チェックを今すぐ.bat」をダブルクリックしてください。</div>
 </div></div>
 <div id="bsPage" hidden></div>
+<div id="hsPage" hidden><div class="hswrap">
+  <div class="hsbar"><input id="hsQ" placeholder="品番を入力（例 RD2331B　一部だけでも可）" autocapitalize="characters" autocomplete="off" spellcheck="false"><select id="hsPer"><option value="1">今月</option><option value="3" selected>3か月</option><option value="6">6か月</option><option value="12">12か月</option></select><button class="pri" id="hsGo">🔍 検索</button></div>
+  <div class="subt">造型・注湯・ショット・検査の日報から、その品番を「いつ・どの号機で・何個」作り、いつ検査したかを出します。ロット（造型日）ごとのつながりも出します。</div>
+  <div id="hsBody"></div>
+</div></div>
 <div id="qrPage" hidden><div class="qwrap">
   <div class="qbar"><button class="pri" id="qPrint">🖨 印刷する</button><button id="qCopyAll">すべてのURLをコピー</button>
     <label><input type="checkbox" id="qView" checked> 閲覧用も出す</label><label><input type="checkbox" id="qAdm"> 印刷に管理者用も入れる</label></div>
@@ -362,13 +387,15 @@ function renderProcs(){ $("procs").innerHTML=`<button class="pb ${st.tab==="home
   PROCS.map(p=>`<button class="pb ${st.tab===p.k?"on":""}" data-t="${p.k}" style="--c:${p.c}">${p.name}<small>${p.id}</small></button>`).join("")+
   `<button class="pb ${st.tab==="mon"?"on":""}" data-t="mon" style="--c:#4169e1">月次実績<small>1ヶ月のまとめ</small></button>`+
   `<button class="pb ${st.tab==="chk"?"on":""}" data-t="chk" style="--c:#2e7d32">整合性チェック<small>毎朝の確認</small></button>`+
+  `<button class="pb ${st.tab==="hs"?"on":""}" data-t="hs" style="--c:#00796b">品番検索<small>生産・検査の履歴</small></button>`+
   `<button class="pb ${st.tab==="bs"?"on":""}" data-t="bs" style="--c:#b71c1c">災害対応<small>訓練・記録</small></button>`+
   `<button class="pb ${st.tab==="qr"?"on":""}" data-t="qr" style="--c:#1565c0">QR・URL<small>配布用</small></button>`+
   `<button class="pb ${st.tab==="del"?"on":""}" data-t="del" style="--c:#c62828">日報の削除<small>管理者</small></button>`; }
 function urlOf(p,mode,eq){ const q=new URLSearchParams(); if(p.eq){ q.set("equip",eq||st.eq[p.k]||p.eq[0]); if(p.date&&st.date!==ymd(new Date())) q.set("date",st.date); }
   let s=q.toString(); if(mode==="view") s+=(s?"&":"")+"view"; return p.path+(s?"?"+s:""); }
 function open(k){ st.tab=k; save(); renderProcs();
-  $("delPage").hidden=true; $("qrPage").hidden=true; $("chkPage").hidden=true; $("monPage").hidden=true; $("bsPage").hidden=true;
+  $("delPage").hidden=true; $("qrPage").hidden=true; $("chkPage").hidden=true; $("monPage").hidden=true; $("bsPage").hidden=true; $("hsPage").hidden=true;
+  if(k==="hs"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("hsPage").hidden=false; hsOpen(); return; }
   if(k==="bs"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("bsPage").hidden=false; if(window.__bousai) window.__bousai.records($("bsPage")); return; }
   if(k==="mon"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("monPage").hidden=false; mrOpen(); return; }
   if(k==="chk"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("chkPage").hidden=false; ckOpen(); return; }
@@ -859,6 +886,68 @@ function mrRender(){ const D=MR.data, box=$("mrBody"); if(!D) return; const {mon
 const MR_LC={}, MR_MD={};
 const mrCK=(k,d)=>"kanri:mr10:"+k+"|"+d.date+"|"+(d.equip||"");
 // 月まとめ（Apps Script の「削除」ファイルに入っている monthData）。入っていなければ null → 1日ずつ読む
+// ---- 品番検索：造型・注湯・ショット・検査の日報から、品番ごとの生産・検査の履歴を出す ----
+const HS={q:"",per:3,busy:false,seq:0};
+const hsNorm=h=>String(h||"").normalize("NFKC").toUpperCase().replace(/[\s　]/g,"").replace(/^RD0*(\d)/,"RD$1");
+const hsLot=l=>{ const m=/(\d{2})-(\d{1,2})-(\d{1,2})/.exec(l||""); return m?`20${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`:""; };
+function hsOpen(){ $("hsQ").value=HS.q; $("hsPer").value=String(HS.per); if(!HS.q) setTimeout(()=>$("hsQ").focus(),100); }
+$("hsGo").onclick=()=>hsSearch(); $("hsQ").addEventListener("keydown",e=>{ if(e.key==="Enter") hsSearch(); });
+// 1つの工程・1か月分の日報（月まとめが使えなければ1日ずつ読む）→ [{date,equip,items}]
+async function hsMonth(k,m,prog){ const out=[]; const md=await mrMonthData(k,m,false);
+  if(md&&md.days){ Object.entries(md.days).forEach(([key,items])=>{ const i=key.indexOf("|"); out.push({date:key.slice(0,i),equip:key.slice(i+1),items:items||[]}); }); return out; }
+  const L=await mrList(k,m); let i=0; await Promise.all(Array.from({length:6},async()=>{ while(i<L.length){ const d=L[i++];
+    try{ const c=await cfgOf(P[k]); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:d.date,equip:d.equip||""});
+      const j=await (await fetch(u,{redirect:"follow"})).json(); if(j.ok) out.push({date:d.date,equip:d.equip||"",items:j.items||[]}); }catch(e){} prog&&prog(); } })); return out; }
+async function hsSearch(){ const q=hsNorm($("hsQ").value); HS.q=$("hsQ").value.trim(); HS.per=+$("hsPer").value; const box=$("hsBody");
+  if(q.length<3){ box.innerHTML=`<div class="hssec subt">品番を3文字以上入れてください</div>`; return; }
+  const my=++HS.seq, now=new Date(), months=[]; for(let i=0;i<HS.per;i++){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`); }
+  const ks=["zokei","chuto","shot","kensa"], tot=ks.length*months.length; let done=0;
+  const prog=()=>{ if(my===HS.seq) box.innerHTML=`<div class="hssec">読み込んでいます… ${done} / ${tot}<div class="hsprog"><i style="width:${Math.round(done/tot*100)}%"></i></div><span class="subt">はじめての月は少し時間がかかります</span></div>`; };
+  prog(); const D={}; await Promise.all(ks.map(async k=>{ D[k]=[]; for(const m of months){ try{ (await hsMonth(k,m)).forEach(x=>D[k].push(x)); }catch(e){} done++; prog(); } }));
+  if(my!==HS.seq) return; const hit=h=>{ const n=hsNorm(h); return !!n&&n.includes(q); }, hins=new Set(), E=[];
+  // 造型
+  D.zokei.forEach(x=>x.items.forEach(it=>{ if(it.type!=="row") return; const r=it.raw||{}; (r.items||[]).forEach((v,k)=>{ if(!v||!hit(v.hin)) return; hins.add(v.hin);
+    const qq=mrNum((r.qtyOut||[])[k]), fr=mrNum(k>0&&v.tot?v.tot:r.total); E.push({p:"造型",d:x.date,eq:x.equip,hin:v.hin,name:v.name||"",t:r.st||"",t2:r.en||"",fr:fr||0,q:qq||0,kowa:mrNum(v.kowa)||0,test:!!v.test,w:r.worker||""}); }); }));
+  // 注湯
+  D.chuto.forEach(x=>{ const by={}; x.items.forEach(it=>{ if(it.type!=="block") return; ((it.raw||{}).rows||[]).forEach(r=>{ if(!r||!r.time||!hit(r.hin)) return; hins.add(r.hin);
+      const k=r.hin, o=by[k]||(by[k]={p:"注湯",d:x.date,eq:x.equip,hin:r.hin,n:0,ng:0,t:r.time,t2:r.time,temps:[]}); o.n++; const f=r.rrjudge||r.rejudge||r.judge||""; if(f==="×") o.ng++; if(r.time<o.t) o.t=r.time; if(r.time>o.t2) o.t2=r.time; const tt=mrNum(r.temp); if(tt!=null) o.temps.push(tt); }); });
+    Object.values(by).forEach(o=>E.push(o)); });
+  // ショット
+  D.shot.forEach(x=>x.items.forEach(it=>{ if(it.type!=="row") return; const r=it.raw||{}; if(!hit(r.hin)) return; hins.add(r.hin); E.push({p:"ショット",d:x.date,eq:x.equip,hin:r.hin,lot:r.lot||"",ld:hsLot(r.lot),t:r.st||"",pal:r.pal||"",w:r.worker||""}); }));
+  // 検査
+  D.kensa.forEach(x=>x.items.forEach(it=>{ if(it.type!=="row") return; const r=it.raw||{}; if(!hit(r.hin)||r.contFrom) return; hins.add(r.hin);
+    const dsum=o=>MR_DEF.reduce((a,[k])=>a+(mrNum((o||{})[k])||0),0), dtxt=o=>MR_DEF.filter(([k])=>mrNum((o||{})[k])).map(([k,l])=>`${l}${mrNum(o[k])}`).join("・");
+    const L=r.lot2?[[r.lot1||r.lot,mrNum(r.t1)||0,r.d1||{}],[r.lot2,mrNum(r.t2)||0,r.d2||{}]]:[[r.lot1||r.lot,mrNum(r.total)||0,r.d||{}]];
+    L.forEach(([l,g,dd])=>E.push({p:"検査",d:x.date,eq:x.equip,hin:r.hin,lot:l||"",ld:hsLot(l),t:r.st||"",t2:r.en||"",ok:r.bari?0:g,ng:dsum(dd),det:dtxt(dd),bari:!!r.bari,pal:r.pal||""})); }));
+  hsRender(q,E,[...hins].sort(),months); }
+function hsRender(q,E,hins,months){ const box=$("hsBody"), md=d=>`${+d.slice(5,7)}/${+d.slice(8)}`, f0=n=>Math.round(n||0).toLocaleString(), col=p=>((PROCS.find(x=>x.name===p)||{}).c)||"#455a64";
+  if(!E.length){ box.innerHTML=`<div class="hssec">「${esc(HS.q)}」の記録は、${months.length===1?"今月":"この"+months.length+"か月"}の造型・注湯・ショット・検査の日報にありません</div>`; return; }
+  const Z=E.filter(e=>e.p==="造型"&&!e.test), C=E.filter(e=>e.p==="注湯"), S=E.filter(e=>e.p==="ショット"), K=E.filter(e=>e.p==="検査");
+  const zq=Z.reduce((a,e)=>a+e.q,0), kok=K.reduce((a,e)=>a+e.ok,0), kng=K.reduce((a,e)=>a+e.ng,0), days=a=>new Set(a.map(e=>e.d)).size;
+  const last=a=>a.length?md(a.map(e=>e.d).sort().pop()):"－";
+  let h=`<div class="hssec"><h3>${esc(hins.join("・"))}</h3>${hins.length>1?`<div class="subt" style="margin-bottom:6px">「${esc(HS.q)}」を含む品番 ${hins.length} 件をまとめて表示</div>`:""}<div class="hstiles">`+
+    `<div class="hstile"><div class="l">造型</div><div class="v">${f0(zq)} 個</div><div class="s">${days(Z)} 日・${f0(Z.reduce((a,e)=>a+e.fr,0))} 枠　最後 ${last(Z)}</div></div>`+
+    `<div class="hstile"><div class="l">注湯</div><div class="v">${f0(C.reduce((a,e)=>a+e.n,0))} 回</div><div class="s">${days(C)} 日${C.some(e=>e.ng)?`・<span class="hsng">温度× ${C.reduce((a,e)=>a+e.ng,0)}</span>`:""}　最後 ${last(C)}</div></div>`+
+    `<div class="hstile"><div class="l">ショット</div><div class="v">${S.length} 件</div><div class="s">${days(S)} 日　最後 ${last(S)}</div></div>`+
+    `<div class="hstile"><div class="l">検査</div><div class="v">${f0(kok+kng)} 個</div><div class="s">良品 ${f0(kok)}・不良 <span class="${kng?"hsng":""}">${f0(kng)}</span>${kok+kng?`（${(kng/(kok+kng)*100).toFixed(2)}%）`:""}　最後 ${last(K)}</div></div></div></div>`;
+  // ロット（造型日）ごと
+  const lots={}; const L=d=>lots[d]||(lots[d]={d,zq:0,eq:new Set(),c:0,s:[],k:[],kok:0,kng:0});
+  Z.forEach(e=>{ const o=L(e.d); o.zq+=e.q; o.eq.add(e.eq); }); C.forEach(e=>{ L(e.d).c+=e.n; });
+  S.forEach(e=>{ if(e.ld) L(e.ld).s.push(e.d); }); K.forEach(e=>{ if(!e.ld) return; const o=L(e.ld); o.k.push(e.d); o.kok+=e.ok; o.kng+=e.ng; });
+  const LL=Object.values(lots).sort((a,b)=>b.d.localeCompare(a.d)), uq=a=>[...new Set(a)].sort().map(md).join("・");
+  h+=`<div class="hssec"><h3>ロット（造型日）ごと</h3><div class="mrscroll"><table class="hst"><thead><tr><th>ロット<br>（造型日）</th><th>造型</th><th>注湯</th><th>ショットした日</th><th>検査した日</th><th>検査<br>良品＋不良</th><th>不良</th><th>残り<br>（造型−検査）</th></tr></thead><tbody>`+
+    LL.map(o=>{ const ins=o.kok+o.kng, rest=o.zq-ins; return `<tr><td><b>${md(o.d)}</b><div class="subt">C${o.d.slice(2,4)}-${+o.d.slice(5,7)}-${+o.d.slice(8)}</div></td><td class="n">${o.zq?f0(o.zq)+" 個":"－"}<div class="subt">${esc([...o.eq].join("・"))}</div></td><td class="n">${o.c?o.c+" 回":"－"}</td><td>${uq(o.s)||"－"}</td><td>${uq(o.k)||"－"}</td><td class="n">${ins?f0(ins)+" 個":"－"}</td><td class="n ${o.kng?"hsng":""}">${o.kng||""}</td><td class="n ${o.zq&&rest<0?"hsng":""}">${o.zq?(rest>0?f0(rest)+" 個":rest===0?"検査ずみ":`${f0(-rest)} 個多い`):"－"}</td></tr>`; }).join("")+`</tbody></table></div>`+
+    `<div class="subt">ショット・検査のロット（例 C26-11-8）から造型日をつないでいます。ロットが入っていない記録はこの表に入りません。</div></div>`;
+  // 日ごとの記録
+  const by={}; E.forEach(e=>(by[e.d]=by[e.d]||[]).push(e)); const ord={"造型":0,"注湯":1,"ショット":2,"検査":3};
+  h+=`<div class="hssec"><h3>日ごとの記録（新しい順）</h3><div class="mrscroll"><table class="hst"><thead><tr><th>日付</th><th>工程</th><th>号機・設備・検査員</th><th>品番</th><th>時刻</th><th>内容</th></tr></thead><tbody>`+
+    Object.keys(by).sort().reverse().map(d=>by[d].sort((a,b)=>ord[a.p]-ord[b.p]||String(a.t).localeCompare(String(b.t))).map((e,i)=>{
+      let c=""; if(e.p==="造型") c=`${f0(e.fr)} 枠・<b>${f0(e.q)} 個</b>${e.kowa?`・<span class="hsng">中子破損 ${e.kowa}</span>`:""}${e.test?"（テスト品番）":""}${e.w?`<div class="subt">作業者 ${esc(e.w)}</div>`:""}`;
+      else if(e.p==="注湯") c=`${e.n} 回${e.temps.length?`・温度 ${Math.min(...e.temps)}〜${Math.max(...e.temps)}℃`:""}${e.ng?`・<span class="hsng">温度× ${e.ng}</span>`:""}`;
+      else if(e.p==="ショット") c=`ロット ${esc(e.lot||"－")}${e.ld?`（造型 ${md(e.ld)}）`:""}${e.pal?`・パレット ${esc(e.pal)}`:""}${e.w?`<div class="subt">作業者 ${esc(e.w)}</div>`:""}`;
+      else c=e.bari?`ロット ${esc(e.lot||"－")}・バリ取りのみ${e.ng?`・<span class="hsng">不良 ${e.ng}</span>`:""}`:`ロット ${esc(e.lot||"－")}${e.ld?`（造型 ${md(e.ld)}）`:""}・良品 <b>${f0(e.ok)}</b>・不良 <span class="${e.ng?"hsng":""}">${e.ng}</span>${e.det?`<div class="subt">${esc(e.det)}</div>`:""}`;
+      return `<tr><td style="white-space:nowrap">${i?"":`<b>${md(d)}</b>`}</td><td><span class="pz" style="background:${col(e.p)}">${e.p}</span></td><td>${esc(e.eq)}</td><td style="white-space:nowrap">${esc(e.hin)}</td><td style="white-space:nowrap">${esc(e.t||"")}${e.t2&&e.t2!==e.t?"〜"+esc(e.t2):""}</td><td>${c}</td></tr>`; }).join("")).join("")+`</tbody></table></div></div>`;
+  box.innerHTML=h; }
 async function mrMonthData(k,m,force){ const key=k+"|"+m, o=MR_MD[key]; if(!force&&o&&Date.now()-o.at<120000) return o.v; let v=null;
   try{ const j=await postTo(P[k],{action:"monthData",month:m}); if(j&&j.month===m&&j.days) v=j; }catch(e){} MR_MD[key]={at:Date.now(),v}; return v; }
 function mrFromMD(k,md,d){ const x=md.days[d.date+"|"+(d.equip||"")]; return k==="suna"?Object.assign({ok:true,rows:[],header:null,events:[]},x||{}):{ok:true,items:x||[]}; }
@@ -1047,7 +1136,7 @@ $("qView").addEventListener("change",renderQR); $("qAdm").addEventListener("chan
 $("qPrint").onclick=()=>{ document.body.classList.toggle("qr-noadm",!$("qAdm").checked); window.print(); };
 $("qCopyAll").onclick=async()=>{ const {F,A}=qrList(), L=["鋳造課 日報アプリ URL一覧",""," 【現場用】",...F.map(x=>`${x.name}（${x.sub}）\n  ${ORIG+x.path}`),""," 【管理者のみ（現場に貼らない）】",...A.map(x=>`${x.name}\n  ${ORIG+x.path}`)];
   toastK(await copyText(L.join("\n"))?"すべてのURLをコピーしました":"コピーできませんでした"); };
-(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||["home","del","qr","chk","mon","bs"].includes(st.tab)?st.tab:"home"); })();
+(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||["home","del","qr","chk","mon","bs","hs"].includes(st.tab)?st.tab:"home"); })();
 })();
 </script>
 <!-- ===== 緊急地震速報（浜松市＝静岡県西部）＋ 災害対応チェックシート（全アプリ共通） ===== -->
