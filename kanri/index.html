@@ -69,6 +69,8 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 .runst{max-width:1200px;margin:0 auto 10px;background:#fff;border:1px solid #cfd8dc;border-left:8px solid #2e7d32;border-radius:12px;padding:8px 14px;font-size:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .runst.run{border-left-color:#1565c0}.runst.warn{border-left-color:#f9a825}.runst.ng{border-left-color:#c62828}
 .runst b{font-size:16px}
+.crow.jl{cursor:pointer;border-radius:8px}.crow.jl:hover{background:#e3f2fd}
+.crow .cgo{margin-left:auto;color:#1565c0;font-weight:bold;font-size:13px;white-space:nowrap}
 /* 後日の変更 */
 .chgbox{max-width:1200px;margin:0 auto 10px;background:#fff;border:1px solid #cfd8dc;border-left:8px solid #c62828;border-radius:12px;padding:8px 14px;font-size:15px}
 .chgbox.none{border-left-color:#2e7d32}
@@ -391,7 +393,8 @@ function renderProcs(){ $("procs").innerHTML=`<button class="pb ${st.tab==="home
   `<button class="pb ${st.tab==="bs"?"on":""}" data-t="bs" style="--c:#b71c1c">災害対応<small>訓練・記録</small></button>`+
   `<button class="pb ${st.tab==="qr"?"on":""}" data-t="qr" style="--c:#1565c0">QR・URL<small>配布用</small></button>`+
   `<button class="pb ${st.tab==="del"?"on":""}" data-t="del" style="--c:#c62828">日報の削除<small>管理者</small></button>`; }
-function urlOf(p,mode,eq){ const q=new URLSearchParams(); if(p.eq){ q.set("equip",eq||st.eq[p.k]||p.eq[0]); if(p.date&&st.date!==ymd(new Date())) q.set("date",st.date); }
+let JUMP=null;   // 整合性チェックからとぶ先 {k,d,e,n}
+function urlOf(p,mode,eq){ const q=new URLSearchParams(); if(JUMP&&JUMP.k===p.k){ q.set("jump",[JUMP.d,JUMP.e||"",JUMP.n||""].join("|")); JUMP=null; } if(p.eq){ q.set("equip",eq||st.eq[p.k]||p.eq[0]); if(p.date&&st.date!==ymd(new Date())) q.set("date",st.date); }
   let s=q.toString(); if(mode==="view") s+=(s?"&":"")+"view"; return p.path+(s?"?"+s:""); }
 function open(k){ st.tab=k; save(); renderProcs();
   $("delPage").hidden=true; $("qrPage").hidden=true; $("chkPage").hidden=true; $("monPage").hidden=true; $("bsPage").hidden=true; $("hsPage").hidden=true;
@@ -1026,6 +1029,24 @@ $("mrPrint").onclick=()=>{ document.body.classList.add("pmon"); window.print(); 
 
 // ---- 整合性チェック（タブ）：月ごとに日付を並べて、選んだ日の結果を工程ごとに出す ----
 const ck={month:null,day:null,lv:"bad",proc:"all",cache:{},sup:{}};
+// 整合性チェックの行 → どの日報のどこか（メッセージの書き方から読み取る）
+let CKJ=[];
+function ckLoc(x){ const m=String(x.msg||""), p=x.proc||"", c=x.cat||""; let r;
+  if(c==="読み込み") return null;
+  if((r=/(?:^|検査 )(\S+) 検査(\d+)（/.exec(m))) return {k:"kensa",e:r[1],n:+r[2]};
+  if((r=/(?:^|ショット )(\S*ショット) No\.(\d+)/.exec(m))) return {k:"shot",e:r[1],n:+r[2]};
+  if((r=/^(\d号機) チャージ(\d+)/.exec(m))) return {k:"chuto",e:r[1],n:+r[2]};
+  if((r=/溶解 No\.(\d+)/.exec(m))||(p==="溶解"&&(r=/No\.(\d+)/.exec(m)))) return {k:"yokai",e:"",n:+r[1]};
+  if(p==="造型"&&(r=/^(\d号機) No\.(\d+)/.exec(m))) return {k:"zokei",e:r[1],n:+r[2]};
+  if(p==="造型"&&(r=/^(\d号機)/.exec(m))) return {k:"zokei",e:r[1]};
+  if(p==="砂処理"&&(r=/^(\S+) のバッチ数/.exec(m))) return {k:"suna",e:r[1]};
+  if(c==="個数"||c==="品番"||c==="造型計画"||c==="品番コード"){ const h=/([A-Z]{1,3}[0-9A-Z]*\d[0-9A-Z]*-?[0-9A-Z]*)/.exec(m.normalize("NFKC")); if(h&&!/^C\d{2}-/.test(h[1])) return {hs:h[1]}; }
+  const PK={"砂処理":"suna","溶解":"yokai","造型":"zokei","注湯":"chuto","検査":"kensa","ショット":"shot","溶解・注湯":"chuto","造型・注湯":"zokei"};
+  return PK[p]?{k:PK[p]}:null; }
+function ckJump(o){ if(!o||!o.L) return; const L=o.L;
+  if(L.hs){ HS.q=L.hs; open("hs"); $("hsQ").value=L.hs; hsSearch(); return; }
+  st.date=o.d; $("date").value=o.d; const pp=P[L.k]; if(pp.eq&&L.e&&pp.eq.includes(L.e)) st.eq[L.k]=L.e;
+  JUMP={k:L.k,d:o.d,e:L.e||"",n:L.n||""}; open(L.k); }
 async function ckGet(m,force){ const o=ck.cache[m]; if(!force&&o&&Date.now()-o.at<60*1000) return o.list;
   const c=await cfgOf(P.henka); if(!c||!c.syncUrl) throw new Error("4M変化点の設定がありません");
   const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:m,equip:"check"});
@@ -1056,10 +1077,11 @@ function ckRender(){ const L=ck.list||[], dmd=s=>s.replace(/^(\d+)-0?(\d+)-0?(\d
     `<span class="subt">${at?`${at.getMonth()+1}/${at.getDate()} ${at.getHours()}:${String(at.getMinutes()).padStart(2,"0")} チェック`:""}</span></div>`;
   h+=`<div class="csup" id="ckSup"></div>`;
   if(!f.length) h+=`<div class="cgrp"><div class="crow">${ck.lv==="all"?"項目がありません":"この条件の問題は見つかりませんでした ✓"}</div></div>`;
-  const ord={NG:0,"注意":1,Info:2,OK:3};
+  const ord={NG:0,"注意":1,Info:2,OK:3}; CKJ=[];
   [...new Set(f.map(x=>x.proc||"その他"))].forEach(p=>{ const g=f.filter(x=>(x.proc||"その他")===p).sort((a,b)=>(ord[a.lv]??9)-(ord[b.lv]??9));
-    h+=`<div class="cgrp"><h3>${esc(p)}<span class="badge">${g.length}件</span></h3>`+g.map(x=>`<div class="crow"><span class="lv ${esc(x.lv)}">${x.lv==="NG"?"要確認":esc(x.lv)}</span><span class="cc">${esc(x.cat||"")}</span><span>${esc(x.msg||"")}</span></div>`).join("")+`</div>`; });
-  body.innerHTML=h; supRender(d); }
+    h+=`<div class="cgrp"><h3>${esc(p)}<span class="badge">${g.length}件</span></h3>`+g.map(x=>{ const L=ckLoc(x); const i=CKJ.push({x,L,d:d.date})-1; return `<div class="crow ${L?"jl":""}" ${L?`data-cj="${i}" title="クリックで日報を開く"`:""}><span class="lv ${esc(x.lv)}">${x.lv==="NG"?"要確認":esc(x.lv)}</span><span class="cc">${esc(x.cat||"")}</span><span>${esc(x.msg||"")}</span>${L?`<span class="cgo">${L.hs?"🔍 品番検索":"→ "+esc(P[L.k].name)+(L.n?" No."+L.n:"")+" を開く"}</span>`:""}</div>`; }).join("")+`</div>`; });
+  body.innerHTML=h; supRender(d);
+  body.querySelectorAll("[data-cj]").forEach(el=>el.onclick=()=>ckJump(CKJ[+el.dataset.cj])); }
 // ---- 監督者の確認：チェックを見たあとにボタンを押すと、その日の全工程の日報の「記録確認（監督者）」欄に名前が入る ----
 const SUP_PROCS=["suna","yokai","zokei","chuto","kensa","shot"], SUP_FIELD={chuto:"recordCheck"};
 const supName=()=>String(LS.get("kanri:sup","田代皓")||"").trim();
