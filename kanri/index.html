@@ -1711,7 +1711,9 @@ window.__eew = {onData: onData, hide: hideEew};
 #hsOv tr.run td{background:#e8eef0;font-weight:bold;border-top:3px solid #1d4e5c}
 #hsOv .pz{display:inline-block;color:#fff;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:bold;white-space:nowrap}
 #hsOv .src{font-size:11px;color:#4e342e;border:1px solid #a1887f;border-radius:5px;padding:0 4px;white-space:nowrap}
-#hsOv.inline{position:static;display:flex;z-index:auto;min-height:75vh}
+#hsOv.inline{position:static;display:none;z-index:auto;min-height:75vh}
+#hsOv.inline.on{display:flex}
+#hsPage[hidden] #hsOv{display:none!important}
 #hsOv.inline .hh{display:none}#hsOv.inline .hb{overflow:visible}
 .hsbtn{background:#ffd54f!important;color:#3a2a00!important;border-color:#ffd54f!important;font-weight:bold}
 @media (max-width:700px){ #hsOv .q1{grid-template-columns:1fr} #hsOv .tabs button{font-size:14px;min-height:52px} #hsOv .tabs button .n{top:2px;right:4px} }
