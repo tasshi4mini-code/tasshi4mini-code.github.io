@@ -217,6 +217,19 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
 #hsPage{flex:1 1 auto;overflow-y:auto;background:#eef1f6;-webkit-overflow-scrolling:touch}
 #hsPage[hidden]{display:none}
 .hswrap{max-width:1200px;margin:0 auto;padding:14px}
+/* 4M振り分け */
+.m4b{display:inline-block;min-width:44px;text-align:center;color:#fff;border-radius:6px;padding:2px 6px;font-weight:bold;font-size:13px}
+.m4-人{background:#1565c0}.m4-設備{background:#2e7d32}.m4-材料{background:#e65100}.m4-方法{background:#6a1b9a}.m4-その他{background:#78909c}
+.m4seg{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.m4seg button{min-height:40px;padding:0 12px;border-radius:20px;border:2px solid #cfd8dc;background:#fff;font-weight:bold;font-size:14px}
+.m4seg button.on{background:#4e342e;color:#fff;border-color:#4e342e}
+.m4sel{font-size:15px;min-height:38px;border-radius:8px;font-weight:bold;border:2px solid #90a4ae}
+.m4sel.v-人{border-color:#1565c0;color:#1565c0}.m4sel.v-設備{border-color:#2e7d32;color:#2e7d32}.m4sel.v-材料{border-color:#e65100;color:#e65100}.m4sel.v-方法{border-color:#6a1b9a;color:#6a1b9a}.m4sel.v-その他{border-color:#78909c;color:#546e7a;background:#eceff1}
+.m4why{font-size:11px;color:#78909c;margin-top:2px}.m4why.man{color:#ef6c00;font-weight:bold}
+.m4done{display:inline-block;background:#e8f5e9;color:#1b5e20;border:1px solid #66bb6a;border-radius:6px;padding:1px 6px;font-size:12px;font-weight:bold;white-space:nowrap}
+.m4act{position:sticky;bottom:0;background:#fff8e1;border:2px solid #ffb300;border-radius:12px;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;z-index:5}
+.m4act button{min-height:44px;font-size:16px;padding:0 16px;border-radius:10px}
+.hst tr.m4tr.sel td{background:#fffde7}
+.m4ck{width:24px;height:24px}
 .hsbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 .hsbar input{flex:1 1 280px;font-size:20px;min-height:48px;padding:0 12px;border:2px solid #00796b;border-radius:10px;text-transform:uppercase;font-weight:bold}
 .hsbar select{font-size:16px;min-height:48px;border-radius:10px}
@@ -329,6 +342,11 @@ nav.procs{display:flex;gap:6px;padding:8px 10px;background:#37474f;overflow-x:au
   <div class="subt">造型・注湯・ショット・検査の日報から、その品番を「いつ・どの号機で・何個」作り、いつ検査したかを出します。ロット（造型日）ごとのつながりも出します。</div>
   <div id="hsBody"></div>
 </div></div>
+<div id="m4Page" hidden><div class="hswrap">
+  <div class="hsbar"><button id="m4Prev">◀</button><input type="month" id="m4Mon" style="flex:0 0 190px;text-transform:none;font-size:18px"><button id="m4Next">▶</button><button class="pri" id="m4Go">🔄 読み込む</button></div>
+  <div class="subt">各工程の日報の「異常・変化点」を集めて、内容から 4M区分（人・設備・材料・方法）を自動で振り分けます。違うときは区分を選び直すと保存されます（全端末共通）。必要なものは ☑ をつけて「4M変化点シートへ移動」で異常・4M変化点管理表に入れられます。</div>
+  <div id="m4Body"></div>
+</div></div>
 <div id="qrPage" hidden><div class="qwrap">
   <div class="qbar"><button class="pri" id="qPrint">🖨 印刷する</button><button id="qCopyAll">すべてのURLをコピー</button>
     <label><input type="checkbox" id="qView" checked> 閲覧用も出す</label><label><input type="checkbox" id="qAdm"> 印刷に管理者用も入れる</label></div>
@@ -390,6 +408,7 @@ function renderProcs(){ $("procs").innerHTML=`<button class="pb ${st.tab==="home
   `<button class="pb ${st.tab==="mon"?"on":""}" data-t="mon" style="--c:#4169e1">月次実績<small>1ヶ月のまとめ</small></button>`+
   `<button class="pb ${st.tab==="chk"?"on":""}" data-t="chk" style="--c:#2e7d32">整合性チェック<small>毎朝の確認</small></button>`+
   `<button class="pb ${st.tab==="hs"?"on":""}" data-t="hs" style="--c:#00796b">品番検索<small>生産・検査の履歴</small></button>`+
+  `<button class="pb ${st.tab==="m4"?"on":""}" data-t="m4" style="--c:#4e342e">4M振り分け<small>異常・変化点から</small></button>`+
   `<button class="pb ${st.tab==="bs"?"on":""}" data-t="bs" style="--c:#b71c1c">災害対応<small>訓練・記録</small></button>`+
   `<button class="pb ${st.tab==="qr"?"on":""}" data-t="qr" style="--c:#1565c0">QR・URL<small>配布用</small></button>`+
   `<button class="pb ${st.tab==="del"?"on":""}" data-t="del" style="--c:#c62828">日報の削除<small>管理者</small></button>`; }
@@ -397,7 +416,8 @@ let JUMP=null;   // 整合性チェックからとぶ先 {k,d,e,n}
 function urlOf(p,mode,eq){ const q=new URLSearchParams(); if(JUMP&&JUMP.k===p.k){ q.set("jump",[JUMP.d,JUMP.e||"",JUMP.n||""].join("|")); JUMP=null; } if(p.eq){ q.set("equip",eq||st.eq[p.k]||p.eq[0]); if(p.date&&st.date!==ymd(new Date())) q.set("date",st.date); }
   let s=q.toString(); if(mode==="view") s+=(s?"&":"")+"view"; return p.path+(s?"?"+s:""); }
 function open(k){ st.tab=k; save(); renderProcs();
-  $("delPage").hidden=true; $("qrPage").hidden=true; $("chkPage").hidden=true; $("monPage").hidden=true; $("bsPage").hidden=true; $("hsPage").hidden=true;
+  $("delPage").hidden=true; $("qrPage").hidden=true; $("chkPage").hidden=true; $("monPage").hidden=true; $("bsPage").hidden=true; $("hsPage").hidden=true; $("m4Page").hidden=true;
+  if(k==="m4"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("m4Page").hidden=false; m4Open(); return; }
   if(k==="hs"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("hsPage").hidden=false; hsOpen(); return; }
   if(k==="bs"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("bsPage").hidden=false; if(window.__bousai) window.__bousai.records($("bsPage")); return; }
   if(k==="mon"){ $("sub").hidden=true; $("frameBox").hidden=true; $("home").hidden=true; $("frame").src="about:blank"; $("monPage").hidden=false; mrOpen(); return; }
@@ -893,6 +913,84 @@ const mrCK=(k,d)=>"kanri:mr10:"+k+"|"+d.date+"|"+(d.equip||"");
 const HS={q:"",per:3,busy:false,seq:0};
 const hsNorm=h=>String(h||"").normalize("NFKC").toUpperCase().replace(/[\s　]/g,"").replace(/^RD0*(\d)/,"RD$1");
 const hsLot=l=>{ const m=/(\d{2})-(\d{1,2})-(\d{1,2})/.exec(l||""); return m?`20${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`:""; };
+// ---- 4M振り分け：各工程の異常・変化点を 4M区分（人・設備・材料・方法）に自動で振り分ける ----
+const m4col=a=>((PROCS.find(p=>p.name===a)||{}).c)||"#455a64";
+const m4md=d=>String(d||"").replace(/^\d+-0?(\d+)-0?(\d+)$/,"$1/$2");
+const M4K=["人","設備","材料","方法","その他"];
+// 先に見る決まった書き方（ボタンで入る文）→ 区分
+const M4_FIX=[[/【機械故障】|機械故障/,"設備"],[/原材料の規格外|銑鉄\s*0\s*kg/,"材料"],[/製造条件/,"方法"]];
+// キーワード（多く当たった区分にする。同じ数なら左の区分）
+const M4_KW={
+  "設備":["故障","修理","異音","異常音","振動","油漏れ","エア漏れ","漏れ","詰まり","つまり","モーター","モータ","ポンプ","センサ","ブレーカ","停電","電源","エラー","アラーム","ベルト","コンベア","チェーン","シリンダ","バルブ","ホース","ヒーター","ブロワ","集塵","クレーン","ホイスト","炉","取鍋","ラドル","ミキサー","混練機","造型機","ショット機","ブラスト","インペラ","ライナ","台車","定盤","模型","金型","中子型","治具","工具","設備","機械","号機","点検","メンテ","部品交換","摩耗","磨耗","割れた","破損し","焼損","交換","調整中","不具合","動かない","止まった","停止"],
+  "材料":["材料","原材料","副資材","銑鉄","スクラップ","新断","鋼","ダライ","戻り材","加炭","シリコン","フェロ","接種","球状化","材質","成分","炭素","ＣＥ","CE値","新砂","砂の","ベントナイト","澱粉","でんぷん","石炭粉","バインダ","中子","塗型","塗料","ショット玉","ショット球","研削材","ロット違い","入荷","在庫","欠品","規格外","メーカー変更","仕入"],
+  "人":["作業者","応援","交代","交替","新人","新規作業者","休み","欠勤","遅刻","早退","不在","人員","人手","人が","代わり","代理","教育","訓練","初めて","はじめて","不慣れ","ミス","間違","まちがい","忘れ","見落とし","うっかり","体調","ケガ","けが","怪我","実習生","職場復帰","久しぶり"],
+  "方法":["条件","手順","方法","やり方","設定","設定値","変更した","変更する","標準","作業標準","段取","型替","品番切替","切り替え","切替","試作","テスト","トライ","温度","時間","圧","水分","ＣＢ","CB","硬度","注湯速度","配合","投入量","投入順","量を","規格変更","図面","指示","検査方法","基準"]
+};
+function m4Auto(txt){ const t=String(txt||""); for(const [re,k] of M4_FIX){ const m=re.exec(t); if(m) return {k,why:m[0]}; }
+  let best=null; for(const k of ["設備","材料","人","方法"]){ const hit=M4_KW[k].filter(w=>t.includes(w)); if(hit.length&&(!best||hit.length>best.n)) best={k,n:hit.length,why:hit.slice(0,3).join("・")}; }
+  return best?{k:best.k,why:best.why}:{k:"その他",why:""}; }
+const M4S={mon:null,busy:false,E:[],fix:{},done:{},sel:new Set(),fp:LS.get("kanri:m4p","all"),fk:LS.get("kanri:m4k","all")};
+function m4Hash(s){ let h=5381; for(const c of String(s)) h=((h*33)^c.charCodeAt(0))>>>0; return h.toString(36); }
+const m4Key=e=>[e.p,e.d,e.eq||"",e.t||"",m4Hash(e.c)].join("|");
+const M4P_MAP={"検査":"セキ"};   // 4M変化点シートの工程名
+function m4Open(){ if(!M4S.mon) M4S.mon=ymd(new Date()).slice(0,7); $("m4Mon").value=M4S.mon; if(!M4S.E.length||M4S.loaded!==M4S.mon) m4Load(); else m4Render(); }
+$("m4Mon").addEventListener("change",()=>{ if($("m4Mon").value){ M4S.mon=$("m4Mon").value; m4Load(); } });
+$("m4Prev").onclick=()=>{ let [y,m]=M4S.mon.split("-").map(Number); m--; if(m<1){m=12;y--;} M4S.mon=`${y}-${String(m).padStart(2,"0")}`; $("m4Mon").value=M4S.mon; m4Load(); };
+$("m4Next").onclick=()=>{ let [y,m]=M4S.mon.split("-").map(Number); m++; if(m>12){m=1;y++;} M4S.mon=`${y}-${String(m).padStart(2,"0")}`; $("m4Mon").value=M4S.mon; m4Load(); };
+$("m4Go").onclick=()=>m4Load(true);
+async function m4LoadFix(){ try{ const c=await cfgOf(P.yokai); const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:"_global",equip:"m4"});
+    const j=await (await fetch(u,{redirect:"follow"})).json(); const F={}; (j.items||[]).forEach(it=>{ if(it.type==="m4"&&it.raw) F[String(it.ref)]=it.raw; }); M4S.fix=F; }catch(e){} }
+async function m4LoadDone(mon){ M4S.done={}; try{ const c=await cfgOf(P.henka); if(!c||!c.syncUrl) return; const u=c.syncUrl+(c.syncUrl.includes("?")?"&":"?")+new URLSearchParams({action:"load",token:c.token||"",date:mon,equip:"4M"});
+    const j=await (await fetch(u,{redirect:"follow"})).json(); (j.items||[]).forEach(it=>{ if(it.type==="rec"&&it.raw&&!it.raw.del&&it.raw.src) M4S.done[it.raw.src]={id:it.ref,m4:it.raw.m4||""}; }); }catch(e){} }
+async function m4Load(force){ if(M4S.busy) return; M4S.busy=true; const mon=M4S.mon, box=$("m4Body"); box.innerHTML=`<div class="hssec">読み込み中…（各工程の日報を集めています）<span id="m4Prog"></span></div>`;
+  try{ const E=[]; const ks=["yokai","suna","zokei","chuto","shot","kensa"]; let tot=0, dn=0;
+    await Promise.all([m4LoadFix(),m4LoadDone(mon),...ks.map(async k=>{ const R=await mrDays(k,d=>String(d).slice(0,7)===mon,[mon],(a,b)=>{ });
+      R.forEach(({d,s})=>((s&&s.ev)||[]).forEach(e=>E.push(Object.assign({},e,{eq:P[k].eq?(d.equip||""):(k==="kensa"?(d.equip||""):""),k})))); })]);
+    if(mon!==M4S.mon) return;
+    E.forEach(e=>{ e.key=m4Key(e); const a=m4Auto(e.c+" "+e.a); e.auto=a.k; e.why=a.why; });
+    E.sort((a,b)=>b.d.localeCompare(a.d)||String(b.t).localeCompare(String(a.t)));
+    M4S.E=E; M4S.loaded=mon; M4S.sel=new Set(); m4Render(); }
+  catch(e){ box.innerHTML=`<div class="hssec">読み込めませんでした：${esc(e.message||e)}</div>`; } finally{ M4S.busy=false; } }
+const m4Of=e=>(M4S.fix[e.key]&&M4S.fix[e.key].m4)||e.auto;
+function m4Render(){ const box=$("m4Body"), E=M4S.E, PR=["溶解","砂処理","造型","注湯","ショット","検査"];
+  const cnt={}; E.forEach(e=>{ const k=m4Of(e); cnt[k+"|"+e.p]=(cnt[k+"|"+e.p]||0)+1; cnt[k]=(cnt[k]||0)+1; cnt["|"+e.p]=(cnt["|"+e.p]||0)+1; });
+  let h=`<div class="hssec"><h3>${M4S.mon.replace("-","年")}月　4M区分ごとの件数（全 ${E.length} 件）</h3><div class="mrscroll"><table class="hst"><thead><tr><th>4M区分</th>${PR.map(p=>`<th>${p}</th>`).join("")}<th>合計</th></tr></thead><tbody>`+
+    M4K.map(k=>`<tr><td><span class="m4b m4-${k}">${k==="その他"?"その他・未分類":k}</span></td>${PR.map(p=>`<td class="n">${cnt[k+"|"+p]||""}</td>`).join("")}<td class="n"><b>${cnt[k]||0}</b></td></tr>`).join("")+
+    `<tr><td><b>合計</b></td>${PR.map(p=>`<td class="n"><b>${cnt["|"+p]||""}</b></td>`).join("")}<td class="n"><b>${E.length}</b></td></tr></tbody></table></div></div>`;
+  const L=E.filter(e=>(M4S.fp==="all"||e.p===M4S.fp)&&(M4S.fk==="all"||(M4S.fk==="未移動"?!M4S.done[e.key]:m4Of(e)===M4S.fk)));
+  h+=`<div class="hssec"><h3>異常・変化点の一覧</h3>
+    <div class="m4seg" id="m4FP">${["all",...PR].map(p=>`<button data-fp="${p}" class="${M4S.fp===p?"on":""}">${p==="all"?"全工程":p}</button>`).join("")}</div>
+    <div class="m4seg" id="m4FK">${["all",...M4K,"未移動"].map(k=>`<button data-fk="${k}" class="${M4S.fk===k?"on":""}">${k==="all"?"全区分":k==="その他"?"その他・未分類":k}${k!=="all"&&k!=="未移動"?` ${cnt[k]||0}`:""}</button>`).join("")}</div>
+    <div class="mrscroll"><table class="hst"><thead><tr><th><input type="checkbox" class="m4ck" id="m4All"></th><th>日付</th><th>工程</th><th>時刻</th><th>異常・変化点の内容</th><th>処置</th><th>4M区分</th><th>シート</th></tr></thead><tbody>`+
+    (L.length?L.map(e=>{ const k=m4Of(e), man=!!M4S.fix[e.key], dn=M4S.done[e.key];
+      return `<tr class="m4tr ${M4S.sel.has(e.key)?"sel":""}" data-key="${esc(e.key)}"><td><input type="checkbox" class="m4ck" data-ck ${M4S.sel.has(e.key)?"checked":""}></td><td style="white-space:nowrap">${m4md(e.d)}</td><td style="white-space:nowrap"><span class="pz" style="background:${m4col(e.p)}">${e.p}</span>${e.eq?`<div class="subt">${esc(e.eq)}</div>`:""}</td><td style="white-space:nowrap">${esc(e.t)}${e.e?"〜"+esc(e.e):""}${e.m!=null?`<div class="subt">${e.m} 分</div>`:""}</td><td>${esc(e.c)}${e.w?`<div class="subt">${esc(e.w)}</div>`:""}</td><td>${esc(e.a)}</td>
+        <td style="white-space:nowrap"><select class="m4sel v-${k}" data-m4>${M4K.map(x=>`<option value="${x}" ${x===k?"selected":""}>${x==="その他"?"その他・未分類":x}</option>`).join("")}</select><div class="m4why ${man?"man":""}">${man?"手で直した（自動："+esc(e.auto)+"）":e.why?"自動：「"+esc(e.why)+"」":"自動：当てはまる言葉なし"}</div></td>
+        <td>${dn?`<span class="m4done">移動済み${dn.m4&&dn.m4!==(k==="その他"?"":k)?"<br>（区分 "+esc(dn.m4)+"）":""}</span>`:""}</td></tr>`; }).join(""):`<tr><td colspan="8" class="subt" style="text-align:center;padding:16px">該当する記録はありません</td></tr>`)+
+    `</tbody></table></div>
+    <div class="m4act"><b id="m4SelN">${M4S.sel.size} 件 選択中</b><button id="m4SelNew">未移動をすべて選ぶ</button><button id="m4SelClr">選択を外す</button><span style="flex:1"></span><button class="pri" id="m4Send">📋 4M変化点シートへ移動</button></div></div>`;
+  box.innerHTML=h; M4S.L=L; }
+$("m4Body").addEventListener("click",e=>{ const fp=e.target.closest("[data-fp]"), fk=e.target.closest("[data-fk]");
+  if(fp){ M4S.fp=fp.dataset.fp; LS.set("kanri:m4p",M4S.fp); m4Render(); return; } if(fk){ M4S.fk=fk.dataset.fk; LS.set("kanri:m4k",M4S.fk); m4Render(); return; }
+  if(e.target.id==="m4All"){ (M4S.L||[]).forEach(x=>e.target.checked?M4S.sel.add(x.key):M4S.sel.delete(x.key)); m4Render(); return; }
+  if(e.target.id==="m4SelNew"){ (M4S.L||[]).forEach(x=>{ if(!M4S.done[x.key]) M4S.sel.add(x.key); }); m4Render(); return; }
+  if(e.target.id==="m4SelClr"){ M4S.sel.clear(); m4Render(); return; }
+  if(e.target.id==="m4Send"){ m4Send(); return; }
+  if(e.target.matches("[data-ck]")){ const k=e.target.closest("tr").dataset.key; e.target.checked?M4S.sel.add(k):M4S.sel.delete(k); e.target.closest("tr").classList.toggle("sel",e.target.checked); $("m4SelN").textContent=M4S.sel.size+" 件 選択中"; } });
+$("m4Body").addEventListener("change",async e=>{ if(!e.target.matches("[data-m4]")) return; const key=e.target.closest("tr").dataset.key, ev=M4S.E.find(x=>x.key===key); if(!ev) return; const v=e.target.value;
+  const raw={m4:v,auto:ev.auto,p:ev.p,d:ev.d,c:ev.c.slice(0,80),u:Date.now()}; if(v===ev.auto){ raw.m4=""; raw.reset=true; }
+  if(raw.m4) M4S.fix[key]=raw; else delete M4S.fix[key]; m4Render();
+  try{ await postTo(P.yokai,{ops:[{type:"m4",date:"_global",equip:"m4",ref:key,u:raw.u,raw}]}); toastK(raw.m4?`4M区分を「${v}」に直しました`:"自動の区分にもどしました"); }catch(err){ toastK("保存できませんでした："+(err.message||err)); }
+  if(M4S.done[key]&&M4S.done[key].m4!==(v==="その他"?"":v)) toastK("この記録は移動済みです。シートの区分も直すときは、もう一度「4M変化点シートへ移動」を押してください"); });
+async function m4Send(){ const S=M4S.E.filter(e=>M4S.sel.has(e.key)); if(!S.length){ toastK("移動する記録に ☑ をつけてください"); return; }
+  const c=await cfgOf(P.henka); if(!c||!c.syncUrl){ toastK("4M変化点（henka）の config.js の syncUrl が未設定です"); return; }
+  const oth=S.filter(e=>m4Of(e)==="その他").length, again=S.filter(e=>M4S.done[e.key]).length;
+  if(!confirm(`${S.length} 件を「異常・4M変化点管理表」へ移動します。`+(again?`\n（うち ${again} 件は移動済み → シートの内容を上書きします）`:"")+(oth?`\n※「その他・未分類」${oth} 件は 4M区分が空欄で入ります`:"")+"\n\nよろしいですか？")) return;
+  const ops=S.map(e=>{ const k=m4Of(e), id=(M4S.done[e.key]&&M4S.done[e.key].id)||("ab-"+m4Hash(e.key)+m4Hash(e.c+e.d)), u=Date.now();
+    const raw={date:e.d,time:e.t||"",m4:k==="その他"?"":k,proc:M4P_MAP[e.p]||e.p,content:(e.eq?`［${e.eq}］`:"")+e.c+(e.w?`（${e.w}）`:""),rdate:e.a?e.d:"",rtime:e.a?(e.e||""):"",result:e.a||"",checker:"",quality:"",src:e.key,from:"kanri"};
+    return {type:"rec",date:e.d.slice(0,7),equip:"4M",ref:id,u,raw}; });
+  $("m4Send").disabled=true;
+  try{ for(let i=0;i<ops.length;i+=30) await postTo(P.henka,{ops:ops.slice(i,i+30)}); ops.forEach(o=>M4S.done[o.raw.src]={id:o.ref,m4:o.raw.m4}); M4S.sel.clear(); m4Render(); toastK(`${ops.length} 件を 4M変化点シートへ移動しました`); }
+  catch(err){ toastK("移動できませんでした："+(err.message||err)); $("m4Send").disabled=false; } }
 function hsOpen(){ $("hsQ").value=HS.q; $("hsPer").value=String(HS.per); if(!HS.q) setTimeout(()=>$("hsQ").focus(),100); }
 $("hsGo").onclick=()=>hsSearch(); $("hsQ").addEventListener("keydown",e=>{ if(e.key==="Enter") hsSearch(); });
 // 1つの工程・1か月分の日報（月まとめが使えなければ1日ずつ読む）→ [{date,equip,items}]
@@ -1158,7 +1256,7 @@ $("qView").addEventListener("change",renderQR); $("qAdm").addEventListener("chan
 $("qPrint").onclick=()=>{ document.body.classList.toggle("qr-noadm",!$("qAdm").checked); window.print(); };
 $("qCopyAll").onclick=async()=>{ const {F,A}=qrList(), L=["鋳造課 日報アプリ URL一覧",""," 【現場用】",...F.map(x=>`${x.name}（${x.sub}）\n  ${ORIG+x.path}`),""," 【管理者のみ（現場に貼らない）】",...A.map(x=>`${x.name}\n  ${ORIG+x.path}`)];
   toastK(await copyText(L.join("\n"))?"すべてのURLをコピーしました":"コピーできませんでした"); };
-(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||["home","del","qr","chk","mon","bs","hs"].includes(st.tab)?st.tab:"home"); })();
+(async()=>{ renderProcs(); await checkLock(); open(st.tab in P||["home","del","qr","chk","mon","bs","hs","m4"].includes(st.tab)?st.tab:"home"); })();
 })();
 </script>
 <!-- ===== 緊急地震速報（浜松市＝静岡県西部）＋ 災害対応チェックシート（全アプリ共通） ===== -->
